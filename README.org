@@ -1,0 +1,19 @@
+* Things to do
+- Search types
+  - [ ] Annotation
+  - [ ] Area
+  - [X] Artist
+  - [ ] Cdstub
+  - [ ] Doc
+  - [ ] Editor
+  - [ ] Event
+  - [ ] Instrument
+  - [ ] Label
+  - [ ] Place
+  - [ ] Recording
+  - [ ] Release
+  - [X] Release group
+  - [ ] Series
+  - [ ] Tag
+  - [X] Work
+- [ ] Fix non latin symbols
