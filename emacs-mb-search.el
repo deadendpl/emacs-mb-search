@@ -66,7 +66,8 @@ If there is no disambiguation, it puts (disambiguation . \"\")."
   )
 
 (defun mb-api-artist-format (item)
-  "Formats item into a string."
+  "Formats ITEM into a string.
+The ITEM should be an alist returned by `mb-api-search-artist-exact'."
   (concat
    (propertize (cdr (assoc 'name item)) 'face 'underline)
    " (" (propertize (cdr (assoc 'sort-name item)) 'face 'italic)
@@ -76,19 +77,25 @@ If there is no disambiguation, it puts (disambiguation . \"\")."
    ")"
    ))
 
-(defun mb-api-artist-select (data)
+(defun mb-api-select (data format-func prompt)
   "Prompt the user to select a name from the list DATA and return the corresponding ID.
-The DATA is meant to be the output of `mb-api-search-artist-exact'."
-  (let* ((name-list (mapcar #'mb-api-artist-format data))
-         (selected-name (completing-read "Artist: " name-list)))
+The DATA should be the output of exact searching funcion like `mb-api-search-artist-exact'.
+FORMAT-FUNC is the formatting function
+PROMPT is a string that's used as comepltion prompt."
+  (let* ((name-list (mapcar format-func data))
+         (selected-name (completing-read prompt name-list)))
     (cdr (assoc 'id (cl-find-if
                      (lambda (item)
-                       (string= (mb-api-artist-format item) selected-name))
+                       (string= (funcall format-func item) selected-name))
                      data)))))
 
-(defun mb-api-artist (artist)
+(defun mb-api-artist-select (artist)
+  (mb-api-select (mb-api-search-artist-exact artist) #'mb-api-artist-format "Artist: "))
+
+;;;###autoload
+(defun mb-search-artist (artist)
   (interactive "sArtist: ")
-  (mb-api-open (mb-api-artist-select (mb-api-search-artist-exact artist)))
+  (mb-api-open (mb-api-artist-select artist))
   )
 
 (defun mb-api-search-release-group (release-group)
@@ -124,19 +131,13 @@ not be displayed correctly."
    (cdr (assoc 'artist-name x))
    ))
 
-(defun mb-api-release-group-select (data)
-  "Prompt for a name from the list DATA and return the corresponding ID.
-The DATA is meant to be the output of `mb-api-search-release-group-exact'."
-  (let* ((name-list (mapcar #'mb-api-release-group-format data))
-         (selected-name (completing-read "Release group: " name-list)))
-    (cdr (assoc 'id (cl-find-if
-                     (lambda (item)
-                       (string= (mb-api-release-group-format item) selected-name))
-                     data)))))
+(defun mb-api-release-group-select (release-group)
+  (mb-api-select (mb-api-search-release-group-exact release-group) #'mb-api-release-group-format "Release group: "))
 
-(defun mb-api-release-group (release-group)
+;;;###autoload
+(defun mb-search-release-group (release-group)
   (interactive "sRelease group: ")
-  (mb-api-open (mb-api-release-group-select (mb-api-search-release-group-exact release-group)))
+  (mb-api-open (mb-api-release-group-select release-group))
   )
 
 (defun mb-api-search-work (work)
@@ -194,20 +195,14 @@ If there is no disambiguation, it puts (disambiguation . \"\")."
    ;;   " (" (cdr (assoc 'disambiguation item)) ")")
    ))
 
-(defun mb-api-work-select (data)
-  "Prompt the user to select a name from the list DATA and return the corresponding ID.
-The DATA is meant to be the output of `mb-api-search-work-exact'."
-  (let* ((name-list (mapcar #'mb-api-work-format data))
-         (selected-name (completing-read "Work: " name-list)))
-    (cdr (assoc 'id (cl-find-if
-                     (lambda (item)
-                       (string= (mb-api-work-format item) selected-name))
-                     data)))))
+(defun mb-api-work-select (work)
+  (mb-api-select (mb-api-search-work-exact work) #'mb-api-work-format "Work: "))
 
-(defun mb-api-work (work)
+;;;###autoload
+(defun mb-search-work (work)
   (interactive "sWork: ")
-  (mb-api-open (mb-api-work-select (mb-api-search-work-exact work)))
+  (mb-api-open (mb-api-work-select work))
   )
 
-(provide 'mb-api)
+(provide 'mb-emacs-search)
 ;;; mb-api.el ends here
