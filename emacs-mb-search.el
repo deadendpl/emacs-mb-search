@@ -117,7 +117,7 @@ not be displayed correctly."
                      (assoc 'title x)
                      (assoc 'primary-type x)
                      (assoc 'first-release-date x)
-                     (car x)
+                     (car x) ; id
                      (cons 'artist-name (cdaar (append (cdr (assoc 'artist-credit x)) nil)))
                      )))
           (append (mb-api-search-release-group-tidy release-group) nil))
@@ -150,23 +150,17 @@ not be displayed correctly."
   (cdr (assoc 'works (cdddr (mb-api-search-work work))))
   )
 
-;; what to get out of work
-;; name
-;; disambiguation if there is one
-;; composers, there might be multiple
-;; id obviously
-
-(defun mb-api-search-work-get-composers (relation)
-  "Input should be the output of
-(append (cdr (assoc 'relations (append (mb-api-search-work-tidy \"foo\") nil))) nil)."
-  (when (string= (cdr (assoc 'type relation)) "composer")
-    `(composers . ,(append (list
-                            (assoc 'name (assoc 'artist relation))
-                            (assoc 'sort-name (assoc 'artist relation))
-                            (if (assoc 'disambiguation (assoc 'artist relation))
-                                (assoc 'disambiguation (assoc 'artist relation))
-                              '(disambiguation . ""))))))
-  )
+;; (defun mb-api-search-work-get-composers (relation)
+;;   "Input should be the output of
+;; (append (cdr (assoc 'relations (append (mb-api-search-work-tidy \"foo\") nil))) nil)."
+;;   (when (string= (cdr (assoc 'type relation)) "composer")
+;;     `(composers . ,(append (list
+;;                             (assoc 'name (assoc 'artist relation))
+;;                             (assoc 'sort-name (assoc 'artist relation))
+;;                             (if (assoc 'disambiguation (assoc 'artist relation))
+;;                                 (assoc 'disambiguation (assoc 'artist relation))
+;;                               '(disambiguation . ""))))))
+;;   )
 
 (defun mb-api-search-work-exact (work)
   "Searches for WORK, and returns an alist of names, disambiguations and IDs.
@@ -178,9 +172,7 @@ If there is no disambiguation, it puts (disambiguation . \"\")."
                          (assoc 'disambiguation x)
                        '(disambiguation . ""))
                      (car x))
-                    ;; listing composers
-                    (delq nil (mapcar #'mb-api-search-work-get-composers
-                                      (append (cdr (assoc 'relations x)) nil)))))
+                    ))
           (append (mb-api-search-work-tidy work) nil))
   )
 
@@ -188,11 +180,9 @@ If there is no disambiguation, it puts (disambiguation . \"\")."
   "Formats item into a string."
   (concat
    (propertize (cdr (assoc 'title item)) 'face 'underline)
-   ;; (propertize (cdr (assoc 'sort-name item)) 'face 'italic)
    ;; if there is disambiguation, add it
    (unless (string= (cdr (assoc 'disambiguation item)) "")
      (concat " (" (cdr (assoc 'disambiguation item)) ")"))
-   ;;   " (" (cdr (assoc 'disambiguation item)) ")")
    ))
 
 (defun mb-api-work-select (work)
