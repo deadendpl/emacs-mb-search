@@ -1,3 +1,20 @@
+* Installation
+- With [[https://github.com/slotThe/vc-use-package][vc-use-package]] (installed manually)
+#+begin_src emacs-lisp
+(use-package emacs-mb-search
+  :vc (:fetcher github :repo "deadendpl/emacs-mb-search"))
+#+end_src
+- With [[https://github.com/slotThe/vc-use-package][vc-use-package]] (built into Emacs 30+)
+#+begin_src emacs-lisp
+(use-package emacs-mb-search
+  :vc (:url "https://github/com/deadendpl/emacs-mb-search"))
+#+end_src
+- Without [[https://github.com/slotThe/vc-use-package][vc-use-package]]
+#+begin_src emacs-lisp
+(package-vc-install "https://github/com/deadendpl/emacs-mb-search")
+#+end_src
+* Screenshot
+[[file:screenshot.png]]
 * Things to do
 - Search types
   - [ ] Annotation
