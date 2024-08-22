@@ -150,16 +150,17 @@ not be displayed correctly."
   (cdr (assoc 'works (cdddr (mb-api-search-work work))))
   )
 
-;; (defun mb-api-search-work-get-composers (relation)
+;; (defun mb-api-search-work-get-composer (relation)
 ;;   "Input should be the output of
-;; (append (cdr (assoc 'relations (append (mb-api-search-work-tidy \"foo\") nil))) nil)."
-;;   (when (string= (cdr (assoc 'type relation)) "composer")
-;;     `(composers . ,(append (list
-;;                             (assoc 'name (assoc 'artist relation))
-;;                             (assoc 'sort-name (assoc 'artist relation))
-;;                             (if (assoc 'disambiguation (assoc 'artist relation))
-;;                                 (assoc 'disambiguation (assoc 'artist relation))
-;;                               '(disambiguation . ""))))))
+;; (`car' (`append' (`cdr' (`assoc' 'relations (`car' (`append' (`mb-api-search-work-tidy' \"foo\") nil)))) nil))."
+;;   (if (string= (cdr (assoc 'type relation)) "composer")
+;;       `(composers . ,(append (list
+;;                               (assoc 'name (assoc 'artist relation))
+;;                               (assoc 'sort-name (assoc 'artist relation))
+;;                               (if (assoc 'disambiguation (assoc 'artist relation))
+;;                                   (assoc 'disambiguation (assoc 'artist relation))
+;;                                 '(disambiguation . "")))))
+;;     "")
 ;;   )
 
 (defun mb-api-search-work-exact (work)
@@ -171,6 +172,8 @@ If there is no disambiguation, it puts (disambiguation . \"\")."
                      (if (assoc 'disambiguation x)
                          (assoc 'disambiguation x)
                        '(disambiguation . ""))
+                     ;; (cons 'composers (mapcar #'mb-api-search-work-get-composer
+                     ;;                          (append (cdr (assoc 'relations x)) nil)))
                      (car x))
                     ))
           (append (mb-api-search-work-tidy work) nil))
@@ -192,6 +195,46 @@ If there is no disambiguation, it puts (disambiguation . \"\")."
 (defun mb-search-work (work)
   (interactive "sWork: ")
   (mb-api-open (mb-api-work-select work))
+  )
+
+(defun mb-api-search-release (release)
+  (mb-api-search "release" release))
+
+(defun mb-api-search-release-tidy (release)
+  (cdr (assoc 'releases (cdddr (mb-api-search-release release)))))
+
+(defun mb-api-search-release-exact (release)
+  "Searches for RELEASE, and returns an alist of titles, first
+release dates, and IDs. If there is no disambiguation, it
+puts (disambiguation . \"\"). NOTE that non latin characters will
+not be displayed correctly."
+  (mapcar (lambda (x)
+            (append (list
+                     (assoc 'title x)
+                     (if (assoc 'date x)
+                         (assoc 'date x)
+                       '(date . ""))
+                     (car x) ; id
+                     ;; (cons 'artist-name (cdr (assoc 'name (car (append (cdr (assoc 'artist-credit (car x))) nil)))))
+                     ;; (cons 'artist-sort-name
+                     ;;       (cdr (assoc 'sort-name (cadar (append (cdr (assoc 'artist-credit x)) nil)))))
+                     )))
+          (append (mb-api-search-release-tidy release) nil))
+  )
+
+(defun mb-api-release-format (x)
+  (concat
+   (cdr (assoc 'date x)) " - "
+   (propertize (cdr (assoc 'title x)) 'face 'underline)
+   ))
+
+(defun mb-api-release-select (release)
+  (mb-api-select (mb-api-search-release-exact release) #'mb-api-release-format "Release: "))
+
+;;;###autoload
+(defun mb-search-release (release)
+  (interactive "sRelease: ")
+  (mb-api-open (mb-api-release-select release))
   )
 
 (provide 'mb-emacs-search)
