@@ -1,4 +1,4 @@
-;;; mb-emacs-search.el --- Emacs MusicBrainz searching       -*- lexical-binding: t; -*-
+;;; mb-search.el --- Emacs MusicBrainz searching       -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2024
 
@@ -20,13 +20,13 @@
 
 ;;; Commentary:
 
-;; So far, artist, release group, and work search is implemented, and it's limited.
 ;; NOTE non latin characters are not diplayed correctly
 
 ;;; Code:
 
 (require 'url)
 (require 'json)
+(load "mb-search-autoloads" t t)
 
 (defun mb-api-search (type query)
   "Searches for QUERY of TYPE, and returns raw lisp data."
@@ -237,5 +237,5 @@ not be displayed correctly."
   (mb-api-open (mb-api-release-select release))
   )
 
-(provide 'mb-emacs-search)
+(provide 'mb-search)
 ;;; mb-api.el ends here
