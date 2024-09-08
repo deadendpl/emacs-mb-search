@@ -4,6 +4,7 @@
 
 ;; Author:  Oliwier Czerwiński <oliwier.czerwi@proton.me>
 ;; Keywords: convenience
+;; Version: 20240908
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -20,25 +21,43 @@
 
 ;;; Commentary:
 
-;; NOTE non latin characters are not diplayed correctly
+;; NOTE non latin characters are not displayed correctly
 
 ;;; Code:
 
 (require 'url)
 (require 'json)
-(load "mb-search-autoloads" t t)
+
+(defconst mb-search-version "20240908")
 
 (defun mb-api-search (type query)
   "Searches for QUERY of TYPE, and returns raw lisp data."
   (with-current-buffer
-      (url-retrieve-synchronously (format "https://musicbrainz.org/ws/2/%s?query=%s&fmt=json" type query))
+      (let ((url-user-agent (format "emacs-mb-search/%s (https://github.com/deadendpl/emacs-mb-search)" mb-search-version)))
+        (url-retrieve-synchronously (format "https://musicbrainz.org/ws/2/%s?query=%s&fmt=json" type query)))
     (goto-char url-http-end-of-headers)
-    (json-read))
-  )
+    (let ((output (json-read)))
+      (if (assoc 'error output)
+          (error (cdr (assoc 'error output)))
+        output))))
+
+(defun mb-api-select (data format-func prompt)
+  "Prompt the user to select a name from the list DATA and return the corresponding ID.
+The DATA should be the output of exact searching funcion like `mb-api-search-artist-exact'.
+FORMAT-FUNC is the formatting function
+PROMPT is a string that's used as comepltion prompt."
+  (let* ((name-list (mapcar format-func data))
+         (selected-name (completing-read prompt name-list)))
+    (cdr (assoc 'id (cl-find-if
+                     (lambda (item)
+                       (string= (funcall format-func item) selected-name))
+                     data)))))
 
 (defun mb-api-open (mbid)
   "Opens MBID in a MusicBrainz webpage."
   (browse-url (concat "https://musicbrainz.org/mbid/" mbid)))
+
+;;; Artist
 
 (defun mb-api-search-artist (artist)
   "Searches for ARTIST, and returns raw lisp data."
@@ -77,18 +96,6 @@ The ITEM should be an alist returned by `mb-api-search-artist-exact'."
    ")"
    ))
 
-(defun mb-api-select (data format-func prompt)
-  "Prompt the user to select a name from the list DATA and return the corresponding ID.
-The DATA should be the output of exact searching funcion like `mb-api-search-artist-exact'.
-FORMAT-FUNC is the formatting function
-PROMPT is a string that's used as comepltion prompt."
-  (let* ((name-list (mapcar format-func data))
-         (selected-name (completing-read prompt name-list)))
-    (cdr (assoc 'id (cl-find-if
-                     (lambda (item)
-                       (string= (funcall format-func item) selected-name))
-                     data)))))
-
 (defun mb-api-artist-select (artist)
   (mb-api-select (mb-api-search-artist-exact artist) #'mb-api-artist-format "Artist: "))
 
@@ -97,6 +104,8 @@ PROMPT is a string that's used as comepltion prompt."
   (interactive "sArtist: ")
   (mb-api-open (mb-api-artist-select artist))
   )
+
+;;; Release group
 
 (defun mb-api-search-release-group (release-group)
   "Searches for a RELEASE-GROUP, and returns raw lisp data."
@@ -139,6 +148,8 @@ not be displayed correctly."
   (interactive "sRelease group: ")
   (mb-api-open (mb-api-release-group-select release-group))
   )
+
+;;; Work
 
 (defun mb-api-search-work (work)
   "Searches for WORK, and returns raw lisp data."
@@ -196,6 +207,8 @@ If there is no disambiguation, it puts (disambiguation . \"\")."
   (interactive "sWork: ")
   (mb-api-open (mb-api-work-select work))
   )
+
+;;; Release
 
 (defun mb-api-search-release (release)
   (mb-api-search "release" release))

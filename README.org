@@ -34,3 +34,4 @@
   - [ ] Tag
   - [X] Work
 - [ ] Fix non latin symbols
+- [ ] Fix naming scheme
