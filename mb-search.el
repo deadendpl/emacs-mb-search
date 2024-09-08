@@ -26,14 +26,20 @@
 ;;; Code:
 
 (require 'url)
+(require 'url-http)
 (require 'json)
 
 (defconst mb-search-version "20240908")
 
+(defun mb-search-user-agent ()
+  "Returns a valid User-Agent string."
+  (format "emacs-mb-search/%s (https://github.com/deadendpl/emacs-mb-search)" mb-search-version)
+  )
+
 (defun mb-api-search (type query)
   "Searches for QUERY of TYPE, and returns raw lisp data."
   (with-current-buffer
-      (let ((url-user-agent (format "emacs-mb-search/%s (https://github.com/deadendpl/emacs-mb-search)" mb-search-version)))
+      (let ((url-request-extra-headers `(("User-Agent" . ,(mb-search-user-agent)))))
         (url-retrieve-synchronously (format "https://musicbrainz.org/ws/2/%s?query=%s&fmt=json" type query)))
     (goto-char url-http-end-of-headers)
     (let ((output (json-read)))
