@@ -16,7 +16,7 @@
 * Screenshot
 [[file:screenshot.png]]
 * Things to do
-- Search types
+- Search types [5/16]
   - [ ] Annotation
   - [ ] Area
   - [X] Artist
@@ -30,7 +30,7 @@
   - [ ] Recording
   - [X] Release
   - [X] Release group
-  - [ ] Series
+  - [X] Series
   - [ ] Tag
   - [X] Work
 - [ ] Fix non latin symbols
