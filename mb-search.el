@@ -4,7 +4,7 @@
 
 ;; Author:  Oliwier Czerwiński <oliwier.czerwi@proton.me>
 ;; Keywords: convenience
-;; Version: 20240908
+;; Version: 20240910
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@
 (require 'url-http)
 (require 'json)
 
-(defconst mb-search-version "20240908")
+(defconst mb-search-version "20240910")
 
 (defun mb-search-user-agent ()
   "Returns a valid User-Agent string."
@@ -256,5 +256,46 @@ not be displayed correctly."
   (mb-api-open (mb-api-release-select release))
   )
 
+;;; Series
+
+(defun mb-api-search-series (series)
+  (mb-api-search "series" series))
+
+(defun mb-api-search-series-tidy (series)
+  (cdr (assoc 'series (cdddr (mb-api-search-series series)))))
+
+(defun mb-api-search-series-exact (series)
+  "Searches for SERIES, and returns an alist of basic info. If there is no disambiguation, it
+puts (disambiguation . \"\"). NOTE that non latin characters will
+not be displayed correctly."
+  (mapcar (lambda (x)
+            (append (list
+                     (assoc 'name x)
+                     (assoc 'type x)
+                     (assoc 'type x)
+                     (assoc 'disambiguation x)
+                     (car x) ; id
+                     )))
+          (append (mb-api-search-series-tidy series) nil))
+  )
+
+(defun mb-api-series-format (x)
+  (concat
+   (cdr (assoc 'name x))
+   " (" (cdr (assoc 'type x))
+   (if (assoc 'disambiguation x)
+       (concat ", " (cdr (assoc 'disambiguation x))))
+   ")"
+   ))
+
+(defun mb-api-series-select (series)
+  (mb-api-select (mb-api-search-series-exact series) #'mb-api-series-format "Series: "))
+
+;;;###autoload
+(defun mb-search-series (series)
+  (interactive "sSeries: ")
+  (mb-api-open (mb-api-series-select series))
+  )
+
 (provide 'mb-search)
-;;; mb-api.el ends here
+;;; mb-search.el ends here
