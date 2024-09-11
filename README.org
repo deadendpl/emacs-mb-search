@@ -16,14 +16,13 @@
 * Screenshot
 [[file:screenshot.png]]
 * Things to do
-- Search types [5/16]
-  - [ ] Annotation
-  - [ ] Area
+- Search types [10/16]
+  - [X] Annotation
+  - [X] Area
   - [X] Artist
-  - [ ] Cdstub
-  - [ ] Doc
-  - [ ] Editor
-  - [ ] Event
+  - [X] Cdstub
+  - [X] Event
+  - [ ] Genre
   - [ ] Instrument
   - [ ] Label
   - [ ] Place
@@ -31,7 +30,8 @@
   - [X] Release
   - [X] Release group
   - [X] Series
-  - [ ] Tag
+  - [X] Tag
+  - [ ] URL
   - [X] Work
 - [ ] Fix non latin symbols
 - [ ] Fix naming scheme
