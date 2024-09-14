@@ -15,8 +15,8 @@
 #+end_src
 * Screenshot
 [[file:screenshot.png]]
-* Things to do
-- Search types [10/16]
+* Things to do [1/2]
+- Search types [11/16]
   - [X] Annotation
   - [X] Area
   - [X] Artist
@@ -26,7 +26,7 @@
   - [ ] Instrument
   - [ ] Label
   - [ ] Place
-  - [ ] Recording
+  - [X] Recording
   - [X] Release
   - [X] Release group
   - [X] Series
@@ -34,4 +34,4 @@
   - [ ] URL
   - [X] Work
 - [ ] Fix non latin symbols
-- [ ] Fix naming scheme
+- [X] Fix naming scheme

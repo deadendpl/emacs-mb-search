@@ -4,7 +4,7 @@
 
 ;; Author:  Oliwier Czerwiński <oliwier.czerwi@proton.me>
 ;; Keywords: convenience
-;; Version: 20240911
+;; Version: 20240914
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -29,14 +29,14 @@
 (require 'url-http)
 (require 'json)
 
-(defconst mb-search-version "20240911")
+(defconst mb-search-version "20240914")
 
 (defun mb-search-user-agent ()
   "Returns a valid User-Agent string."
   (format "emacs-mb-search/%s (https://github.com/deadendpl/emacs-mb-search)" mb-search-version)
   )
 
-(defun mb-api-search (type query)
+(defun mb-search-api (type query)
   "Searches for QUERY of TYPE, and returns raw lisp data."
   (with-current-buffer
       (let ((url-request-extra-headers `(("User-Agent" . ,(mb-search-user-agent)))))
@@ -47,9 +47,9 @@
           (error (cdr (assoc 'error output)))
         output))))
 
-(defun mb-api-select (data format-func prompt result)
+(defun mb-search-select (data format-func prompt result)
   "Prompt the user to select a name from the list DATA and return the corresponding ID.
-The DATA should be the output of exact searching funcion like `mb-api-search-artist-exact'.
+The DATA should be the output of exact searching funcion like `mb-search--search-artist-exact'.
 FORMAT-FUNC is the formatting function
 PROMPT is a string that's used as comepltion prompt.
 RESULT should be id in most cases."
@@ -60,23 +60,23 @@ RESULT should be id in most cases."
                           (string= (funcall format-func item) selected-name))
                         data)))))
 
-(defun mb-api-open (mbid)
-  "Opens MBID in a MusicBrainz webpage."
+(defun mb-search-open (mbid)
+  "Opens MBID in a MusicBrainz website."
   (browse-url (concat "https://musicbrainz.org/mbid/" mbid)))
 
 ;;; Artist
 
-(defun mb-api-search-artist (artist)
+(defun mb-search--artist (artist)
   "Searches for ARTIST, and returns raw lisp data."
-  (mb-api-search "artist" artist)
+  (mb-search-api "artist" artist)
   )
 
-(defun mb-api-search-artist-tidy (artist)
+(defun mb-search--artist-tidy (artist)
   "Searches for ARTIST and returns a vector."
-  (cdr (assoc 'artists (cdddr (mb-api-search-artist artist))))
+  (cdr (assoc 'artists (cdddr (mb-search--artist artist))))
   )
 
-(defun mb-api-search-artist-exact (artist)
+(defun mb-search--artist-exact (artist)
   "Searches for ARTIST, and returns an alist of names, disambiguations and IDs.
 If there is no disambiguation, it puts (disambiguation . \"\")."
   (mapcar (lambda (x)
@@ -88,12 +88,12 @@ If there is no disambiguation, it puts (disambiguation . \"\")."
                        '(disambiguation . ""))
                      ;; `car' is id, and it's faster than `assoc'
                      (car x))))
-          (append (mb-api-search-artist-tidy artist) nil))
+          (append (mb-search--artist-tidy artist) nil))
   )
 
-(defun mb-api-artist-format (item)
+(defun mb-search--artist-format (item)
   "Formats ITEM into a string.
-The ITEM should be an alist returned by `mb-api-search-artist-exact'."
+The ITEM should be an alist returned by `mb-search--artist-exact'."
   (concat
    (propertize (cdr (assoc 'name item)) 'face 'underline)
    " (" (propertize (cdr (assoc 'sort-name item)) 'face 'italic)
@@ -103,27 +103,27 @@ The ITEM should be an alist returned by `mb-api-search-artist-exact'."
    ")"
    ))
 
-(defun mb-api-artist-select (artist)
-  (mb-api-select (mb-api-search-artist-exact artist) #'mb-api-artist-format "Artist: " 'id))
+(defun mb-search--artist-select (artist)
+  (mb-search-select (mb-search--artist-exact artist) #'mb-search--artist-format "Artist: " 'id))
 
 ;;;###autoload
 (defun mb-search-artist (artist)
   (interactive "sArtist: ")
-  (mb-api-open (mb-api-artist-select artist))
+  (mb-search-open (mb-search--artist-select artist))
   )
 
 ;;; Release group
 
-(defun mb-api-search-release-group (release-group)
+(defun mb-search--release-group (release-group)
   "Searches for a RELEASE-GROUP, and returns raw lisp data."
-  (mb-api-search "release-group" release-group))
+  (mb-search-api "release-group" release-group))
 
-(defun mb-api-search-release-group-tidy (release-group)
+(defun mb-search--release-group-tidy (release-group)
   "Searches for RELEASE-GROUP and returns a vector."
-  (cdr (assoc 'release-groups (cdddr (mb-api-search-release-group release-group))))
+  (cdr (assoc 'release-groups (cdddr (mb-search--release-group release-group))))
   )
 
-(defun mb-api-search-release-group-exact (release-group)
+(defun mb-search--release-group-exact (release-group)
   "Searches for RELEASE-GROUP, and returns an alist of titles, first
 release dates, and IDs."
   (mapcar (lambda (x)
@@ -134,10 +134,10 @@ release dates, and IDs."
                      (car x) ; id
                      (cons 'artist-name (cdaar (append (cdr (assoc 'artist-credit x)) nil)))
                      )))
-          (append (mb-api-search-release-group-tidy release-group) nil))
+          (append (mb-search--release-group-tidy release-group) nil))
   )
 
-(defun mb-api-release-group-format (x)
+(defun mb-search--release-group-format (x)
   (concat
    (cdr (assoc 'first-release-date x)) " - "
    (cdr (assoc 'primary-type x)) " - "
@@ -145,30 +145,30 @@ release dates, and IDs."
    (cdr (assoc 'artist-name x))
    ))
 
-(defun mb-api-release-group-select (release-group)
-  (mb-api-select (mb-api-search-release-group-exact release-group) #'mb-api-release-group-format "Releae group: " 'id))
+(defun mb-search--release-group-select (release-group)
+  (mb-search-select (mb-search--release-group-exact release-group) #'mb-search--release-group-format "Releae group: " 'id))
 
 ;;;###autoload
 (defun mb-search-release-group (release-group)
   (interactive "sRelease group: ")
-  (mb-api-open (mb-api-release-group-select release-group))
+  (mb-search-open (mb-search--release-group-select release-group))
   )
 
 ;;; Work
 
-(defun mb-api-search-work (work)
+(defun mb-search--work (work)
   "Searches for WORK, and returns raw lisp data."
-  (mb-api-search "work" work)
+  (mb-search-api "work" work)
   )
 
-(defun mb-api-search-work-tidy (work)
+(defun mb-search--work-tidy (work)
   "Searches for WORK and returns a vector."
-  (cdr (assoc 'works (cdddr (mb-api-search-work work))))
+  (cdr (assoc 'works (cdddr (mb-search--work work))))
   )
 
-;; (defun mb-api-search-work-get-composer (relation)
+;; (defun mb-search--work-get-composer (relation)
 ;;   "Input should be the output of
-;; (`car' (`append' (`cdr' (`assoc' 'relations (`car' (`append' (`mb-api-search-work-tidy' \"foo\") nil)))) nil))."
+;; (`car' (`append' (`cdr' (`assoc' 'relations (`car' (`append' (`mb-search--work-tidy' \"foo\") nil)))) nil))."
 ;;   (if (string= (cdr (assoc 'type relation)) "composer")
 ;;       `(composers . ,(append (list
 ;;                               (assoc 'name (assoc 'artist relation))
@@ -179,7 +179,7 @@ release dates, and IDs."
 ;;     "")
 ;;   )
 
-(defun mb-api-search-work-exact (work)
+(defun mb-search--work-exact (work)
   "Searches for WORK, and returns an alist of names, disambiguations and IDs.
 If there is no disambiguation, it puts (disambiguation . \"\")."
   (mapcar (lambda (x)
@@ -188,14 +188,14 @@ If there is no disambiguation, it puts (disambiguation . \"\")."
                      (if (assoc 'disambiguation x)
                          (assoc 'disambiguation x)
                        '(disambiguation . ""))
-                     ;; (cons 'composers (mapcar #'mb-api-search-work-get-composer
+                     ;; (cons 'composers (mapcar #'mb-search--work-get-composer
                      ;;                          (append (cdr (assoc 'relations x)) nil)))
                      (car x))
                     ))
-          (append (mb-api-search-work-tidy work) nil))
+          (append (mb-search--work-tidy work) nil))
   )
 
-(defun mb-api-work-format (item)
+(defun mb-search--work-format (item)
   "Formats item into a string."
   (concat
    (propertize (cdr (assoc 'title item)) 'face 'underline)
@@ -204,24 +204,24 @@ If there is no disambiguation, it puts (disambiguation . \"\")."
      (concat " (" (cdr (assoc 'disambiguation item)) ")"))
    ))
 
-(defun mb-api-work-select (work)
-  (mb-api-select (mb-api-search-work-exact work) #'mb-api-work-format "Work: " 'id))
+(defun mb-search--work-select (work)
+  (mb-search-select (mb-search--work-exact work) #'mb-search--work-format "Work: " 'id))
 
 ;;;###autoload
 (defun mb-search-work (work)
   (interactive "sWork: ")
-  (mb-api-open (mb-api-work-select work))
+  (mb-search-open (mb-search--work-select work))
   )
 
 ;;; Release
 
-(defun mb-api-search-release (release)
-  (mb-api-search "release" release))
+(defun mb-search--release (release)
+  (mb-search-api "release" release))
 
-(defun mb-api-search-release-tidy (release)
-  (cdr (assoc 'releases (cdddr (mb-api-search-release release)))))
+(defun mb-search--release-tidy (release)
+  (cdr (assoc 'releases (cdddr (mb-search--release release)))))
 
-(defun mb-api-search-release-exact (release)
+(defun mb-search--release-exact (release)
   "Searches for RELEASE, and returns an alist of titles, first
 release dates, and IDs."
   (mapcar (lambda (x)
@@ -235,33 +235,33 @@ release dates, and IDs."
                      ;; (cons 'artist-sort-name
                      ;;       (cdr (assoc 'sort-name (cadar (append (cdr (assoc 'artist-credit x)) nil)))))
                      )))
-          (append (mb-api-search-release-tidy release) nil))
+          (append (mb-search--release-tidy release) nil))
   )
 
-(defun mb-api-release-format (x)
+(defun mb-search--release-format (x)
   (concat
    (cdr (assoc 'date x)) " - "
    (propertize (cdr (assoc 'title x)) 'face 'underline)
    ))
 
-(defun mb-api-release-select (release)
-  (mb-api-select (mb-api-search-release-exact release) #'mb-api-release-format "Release: " 'id))
+(defun mb-search--release-select (release)
+  (mb-search-select (mb-search--release-exact release) #'mb-search--release-format "Release: " 'id))
 
 ;;;###autoload
 (defun mb-search-release (release)
   (interactive "sRelease: ")
-  (mb-api-open (mb-api-release-select release))
+  (mb-search-open (mb-search--release-select release))
   )
 
 ;;; Series
 
-(defun mb-api-search-series (series)
-  (mb-api-search "series" series))
+(defun mb-search--series (series)
+  (mb-search-api "series" series))
 
-(defun mb-api-search-series-tidy (series)
-  (cdr (assoc 'series (cdddr (mb-api-search-series series)))))
+(defun mb-search--series-tidy (series)
+  (cdr (assoc 'series (cdddr (mb-search--series series)))))
 
-(defun mb-api-search-series-exact (series)
+(defun mb-search--series-exact (series)
   "Searches for SERIES, and returns an alist of basic info. If there is no disambiguation, it puts (disambiguation . \"\")."
   (mapcar (lambda (x)
             (append (list
@@ -270,10 +270,10 @@ release dates, and IDs."
                      (assoc 'disambiguation x)
                      (car x) ; id
                      )))
-          (append (mb-api-search-series-tidy series) nil))
+          (append (mb-search--series-tidy series) nil))
   )
 
-(defun mb-api-series-format (x)
+(defun mb-search--series-format (x)
   (concat
    (cdr (assoc 'name x))
    " (" (cdr (assoc 'type x))
@@ -282,51 +282,51 @@ release dates, and IDs."
    ")"
    ))
 
-(defun mb-api-series-select (series)
-  (mb-api-select (mb-api-search-series-exact series) #'mb-api-series-format "Series: " 'id))
+(defun mb-search--series-select (series)
+  (mb-search-select (mb-search--series-exact series) #'mb-search--series-format "Series: " 'id))
 
 ;;;###autoload
 (defun mb-search-series (series)
   (interactive "sSeries: ")
-  (mb-api-open (mb-api-series-select series))
+  (mb-search-open (mb-search--series-select series))
   )
 
 ;;; Tag
 
-(defun mb-api-search-tag (tag)
-  (mb-api-search "tag" tag))
+(defun mb-search--tag (tag)
+  (mb-search-api "tag" tag))
 
-(defun mb-api-search-tag-tidy (tag)
-  (cdr (assoc 'tags (cdddr (mb-api-search-tag tag)))))
+(defun mb-search--tag-tidy (tag)
+  (cdr (assoc 'tags (cdddr (mb-search--tag tag)))))
 
-(defun mb-api-search-tag-exact (tag)
+(defun mb-search--tag-exact (tag)
   "Searches for TAG, and returns an list of names."
   (mapcar (lambda (x)
             (append (cdr (assoc 'name x))))
-          (append (mb-api-search-tag-tidy tag) nil))
+          (append (mb-search--tag-tidy tag) nil))
   )
 
-(defun mb-api-tag-format (x)
+(defun mb-search--tag-format (x)
   (propertize x 'face 'underline))
 
-(defun mb-api-tag-select (tag)
-  (completing-read "Tag: " (mb-api-search-tag-exact tag)))
+(defun mb-search--tag-select (tag)
+  (completing-read "Tag: " (mb-search--tag-exact tag)))
 
 ;;;###autoload
 (defun mb-search-tag (tag)
   (interactive "sTag: ")
-  (browse-url (concat "https://musicbrainz.org/tag/" (mb-api-tag-select tag)))
+  (browse-url (concat "https://musicbrainz.org/tag/" (mb-search--tag-select tag)))
   )
 
 ;;; Annotation
 
-(defun mb-api-search-annotation (annotation)
-  (mb-api-search "annotation" annotation))
+(defun mb-search--annotation (annotation)
+  (mb-search-api "annotation" annotation))
 
-(defun mb-api-search-annotation-tidy (annotation)
-  (cdr (assoc 'annotations (cdddr (mb-api-search-annotation annotation)))))
+(defun mb-search--annotation-tidy (annotation)
+  (cdr (assoc 'annotations (cdddr (mb-search--annotation annotation)))))
 
-(defun mb-api-search-annotation-exact (annotation)
+(defun mb-search--annotation-exact (annotation)
   "Searches for ANNOTATION, and returns an alist of basic info."
   (mapcar (lambda (x)
             (append (list
@@ -335,34 +335,34 @@ release dates, and IDs."
                      (assoc 'name x)
                      (assoc 'entity x) ; id
                      )))
-          (append (mb-api-search-annotation-tidy annotation) nil))
+          (append (mb-search--annotation-tidy annotation) nil))
   )
 
-(defun mb-api-annotation-format (x)
+(defun mb-search--annotation-format (x)
   (concat
    (propertize (cdr (assoc 'text x)) 'face 'underline)
    " (" (cdr (assoc 'type x)) ": "
    (propertize (cdr (assoc 'name x)) 'face 'italic)
    ))
 
-(defun mb-api-annotation-select (annotation)
-  (mb-api-select (mb-api-search-annotation-exact annotation) #'mb-api-annotation-format "Artist: " 'entity))
+(defun mb-search--annotation-select (annotation)
+  (mb-search-select (mb-search--annotation-exact annotation) #'mb-search--annotation-format "Artist: " 'entity))
 
 ;;;###autoload
 (defun mb-search-annotation (annotation)
   (interactive "sAnnotation: ")
-  (mb-api-open (mb-api-annotation-select (mb-api-search-annotation-exact annotation)))
+  (mb-search-open (mb-search--annotation-select (mb-search--annotation-exact annotation)))
   )
 
 ;;; Area
 
-(defun mb-api-search-area (area)
-  (mb-api-search "area" area))
+(defun mb-search--area (area)
+  (mb-search-api "area" area))
 
-(defun mb-api-search-area-tidy (area)
-  (cdr (cadddr (mb-api-search-area area))))
+(defun mb-search--area-tidy (area)
+  (cdr (cadddr (mb-search--area area))))
 
-(defun mb-api-search-area-exact (area)
+(defun mb-search--area-exact (area)
   "Searches for AREA, and returns an alist of basic info."
   (mapcar (lambda (x)
             (append (list
@@ -370,33 +370,33 @@ release dates, and IDs."
                      (assoc 'type x)
                      (car x) ; id
                      )))
-          (append (mb-api-search-area-tidy area) nil))
+          (append (mb-search--area-tidy area) nil))
   )
 
-(defun mb-api-area-format (x)
+(defun mb-search--area-format (x)
   (concat
    (propertize (cdr (assoc 'name x)) 'face 'underline)
    " (" (cdr (assoc 'type x)) ")"
    ))
 
-(defun mb-api-area-select (area)
-  (mb-api-select (mb-api-search-area-exact area) #'mb-api-area-format "Area: " 'id))
+(defun mb-search--area-select (area)
+  (mb-search-select (mb-search--area-exact area) #'mb-search--area-format "Area: " 'id))
 
 ;;;###autoload
 (defun mb-search-area (area)
   (interactive "sArea: ")
-  (mb-api-open (mb-api-area-select area))
+  (mb-search-open (mb-search--area-select area))
   )
 
 ;;; CDstub
 
-(defun mb-api-search-cdstub (cdstub)
-  (mb-api-search "cdstub" cdstub))
+(defun mb-search--cdstub (cdstub)
+  (mb-search-api "cdstub" cdstub))
 
-(defun mb-api-search-cdstub-tidy (cdstub)
-  (cdr (assoc 'cdstubs (cdddr (mb-api-search-cdstub cdstub)))))
+(defun mb-search--cdstub-tidy (cdstub)
+  (cdr (assoc 'cdstubs (cdddr (mb-search--cdstub cdstub)))))
 
-(defun mb-api-search-cdstub-exact (cdstub)
+(defun mb-search--cdstub-exact (cdstub)
   "Searches for CDSTUB, and returns an alist of basic info."
   (mapcar (lambda (x)
             (append (list
@@ -404,10 +404,10 @@ release dates, and IDs."
                      (assoc 'artist x)
                      (car x) ; id
                      )))
-          (append (mb-api-search-cdstub-tidy cdstub) nil))
+          (append (mb-search--cdstub-tidy cdstub) nil))
   )
 
-(defun mb-api-cdstub-format (x)
+(defun mb-search--cdstub-format (x)
   (concat
    (propertize (cdr (assoc 'title x)) 'face 'underline)
    (unless (string= (cdr (assoc 'artist x)) "")
@@ -415,24 +415,24 @@ release dates, and IDs."
      )
    ))
 
-(defun mb-api-cdstub-select (cdstub)
-  (mb-api-select (mb-api-search-cdstub-exact cdstub) #'mb-api-cdstub-format "Cdstub: " 'id))
+(defun mb-search--cdstub-select (cdstub)
+  (mb-search-select (mb-search--cdstub-exact cdstub) #'mb-search--cdstub-format "Cdstub: " 'id))
 
 ;;;###autoload
 (defun mb-search-cdstub (cdstub)
   (interactive "sCDstub: ")
-  (browse-url (concat "https://musicbrainz.org/cdstub/" (mb-api-cdstub-select cdstub)))
+  (browse-url (concat "https://musicbrainz.org/cdstub/" (mb-search--cdstub-select cdstub)))
   )
 
 ;;; Event
 
-(defun mb-api-search-event (event)
-  (mb-api-search "event" event))
+(defun mb-search--event (event)
+  (mb-search-api "event" event))
 
-(defun mb-api-search-event-tidy (event)
-  (cdr (assoc 'events (cdddr (mb-api-search-event event)))))
+(defun mb-search--event-tidy (event)
+  (cdr (assoc 'events (cdddr (mb-search--event event)))))
 
-(defun mb-api-search-event-exact (event)
+(defun mb-search--event-exact (event)
   "Searches for EVENT, and returns an alist of basic info. If there is no disambiguation, it puts (disambiguation . \"\")."
   (mapcar (lambda (x)
             (append (list
@@ -442,22 +442,75 @@ release dates, and IDs."
                      (assoc 'life-span x)
                      (car x) ; id
                      )))
-          (append (mb-api-search-event-tidy event) nil))
+          (append (mb-search--event-tidy event) nil))
   )
 
-(defun mb-api-event-format (x)
+(defun mb-search--event-format (x)
   (concat
    (propertize (cdr (assoc 'name x)) 'face 'underline)
-   ;; TODO adding logic for detecting both disambiguation and year
+   (let ((year (cdadr (assoc 'life-span x)))
+         (disambiguation (cdr (assoc 'disambiguation x))))
+     (when (or year disambiguation)
+       (concat " ("
+               (when year year)
+               (when (and year disambiguation) ", ")
+               (when disambiguation disambiguation)
+               ")")))
    ))
 
-(defun mb-api-event-select (event)
-  (mb-api-select (mb-api-search-event-exact event) #'mb-api-event-format "Event: " 'id))
+(defun mb-search--event-select (event)
+  (mb-search-select (mb-search--event-exact event) #'mb-search--event-format "Event: " 'id))
 
 ;;;###autoload
 (defun mb-search-event (event)
   (interactive "sEvent: ")
-  (mb-api-open (mb-api-event-select event))
+  (mb-search-open (mb-search--event-select event))
+  )
+
+;;; Recording
+
+(defun mb-search--recording (recording)
+  (mb-search-api "recording" recording))
+
+(defun mb-search--recording-tidy (recording)
+  (cdr (assoc 'recordings (cdddr (mb-search--recording recording)))))
+
+(defun mb-search--recording-exact (recording)
+  "Searches for RECORDING, and returns an alist of basic info."
+  (mapcar (lambda (x)
+            (append (list
+                     (assoc 'title x)
+                     ;; calculating time as it's in ms
+                     (if (assoc 'length x)
+                         (let* ((total-seconds (/ (cdr (assoc 'length x)) 1000))
+                                (minutes (/ total-seconds 60))
+                                (seconds (% total-seconds 60)))
+                           (cons 'length (format "%d:%02d" minutes seconds))))
+                     (assoc 'disambiguation x)
+                     (car x) ; id
+                     )))
+          (append (mb-search--recording-tidy recording) nil))
+  )
+
+(defun mb-search--recording-format (x)
+  (concat
+   (propertize (cdr (assoc 'title x)) 'face 'underline)
+   (let ((length (cdr (assoc 'length x)))
+         (disambiguation (cdr (assoc 'disambiguation x))))
+     (when (or length disambiguation)
+       (concat " ("
+               (when length length)
+               (when (and length disambiguation) ", ")
+               (when disambiguation disambiguation)
+               ")")))))
+
+(defun mb-search--recording-select (recording)
+  (mb-search-select (mb-search--recording-exact recording) #'mb-search--recording-format "Recording: " 'id))
+
+;;;###autoload
+(defun mb-search-recording (recording)
+  (interactive "sRecording: ")
+  (mb-search-open (mb-search--recording-select recording))
   )
 
 (provide 'mb-search)
