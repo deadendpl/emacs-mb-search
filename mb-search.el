@@ -4,7 +4,7 @@
 
 ;; Author:  Oliwier Czerwiński <oliwier.czerwi@proton.me>
 ;; Keywords: convenience
-;; Version: 20240914
+;; Version: 20240915
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@
 (require 'url-http)
 (require 'json)
 
-(defconst mb-search-version "20240914")
+(defconst mb-search-version "20240915")
 
 (defun mb-search-user-agent ()
   "Returns a valid User-Agent string."
@@ -49,9 +49,9 @@
 
 (defun mb-search-select (data format-func prompt result)
   "Prompt the user to select a name from the list DATA and return the corresponding ID.
-The DATA should be the output of exact searching funcion like `mb-search--search-artist-exact'.
-FORMAT-FUNC is the formatting function
-PROMPT is a string that's used as comepltion prompt.
+The DATA should be the output of exact searching funcion like `mb-search--artist-exact'.
+FORMAT-FUNC is the formatting function.
+PROMPT is a string that's used as comepletion prompt.
 RESULT should be id in most cases."
   (let* ((name-list (mapcar format-func data))
          (selected-name (completing-read prompt name-list)))
@@ -240,7 +240,8 @@ release dates, and IDs."
 
 (defun mb-search--release-format (x)
   (concat
-   (cdr (assoc 'date x)) " - "
+   (if (cdr (assoc 'date x))
+       (concat (cdr (assoc 'date x)) " - "))
    (propertize (cdr (assoc 'title x)) 'face 'underline)
    ))
 
