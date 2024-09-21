@@ -608,5 +608,51 @@ The ITEM should be an alist returned by `mb-search--label-exact'."
   (mb-search-open (mb-search--label-select label))
   )
 
+;;; Place
+
+(defun mb-search--place (place)
+  "Searches for PLACE, and returns raw lisp data."
+  (mb-search-api "place" place)
+  )
+
+(defun mb-search--place-tidy (place)
+  "Searches for PLACE and returns a vector."
+  (cdr (assoc 'places (cdddr (mb-search--place place))))
+  )
+
+(defun mb-search--place-exact (place)
+  "Searches for PLACE, and returns an alist of names, disambiguations and IDs.
+If there is no disambiguation, it puts (disambiguation . \"\")."
+  (mapcar (lambda (x)
+            (append (list
+                     (assoc 'name x)
+                     (assoc 'type x)
+                     (if (assoc 'disambiguation x)
+                         (assoc 'disambiguation x)
+                       '(disambiguation . ""))
+                     ;; `car' is id, and it's faster than `assoc'
+                     (car x))))
+          (append (mb-search--place-tidy place) nil))
+  )
+
+(defun mb-search--place-format (item)
+  "Formats ITEM into a string.
+The ITEM should be an alist returned by `mb-search--place-exact'."
+  (concat
+   (propertize (cdr (assoc 'name item)) 'face 'underline)
+   (if (assoc 'type item)
+       (concat " (" (cdr (assoc 'type item)) ")")
+     )
+   ))
+
+(defun mb-search--place-select (place)
+  (mb-search-select (mb-search--place-exact place) #'mb-search--place-format "Place: " 'id))
+
+;;;###autoload
+(defun mb-search-place (place)
+  (interactive "sPlace: ")
+  (mb-search-open (mb-search--place-select place))
+  )
+
 (provide 'mb-search)
 ;;; mb-search.el ends here
