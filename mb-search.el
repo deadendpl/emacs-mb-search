@@ -654,5 +654,44 @@ The ITEM should be an alist returned by `mb-search--place-exact'."
   (mb-search-open (mb-search--place-select place))
   )
 
+;;; Url
+
+(defun mb-search--url (url)
+  "Searches for URL, and returns raw lisp data."
+  (mb-search-api "url" url)
+  )
+
+(defun mb-search--url-tidy (url)
+  "Searches for URL and returns a vector."
+  (cdr (assoc 'urls (cdddr (mb-search--url url))))
+  )
+
+(defun mb-search--url-exact (url)
+  "Searches for URL, and returns an alist of names, disambiguations and IDs."
+  (mapcar (lambda (x)
+            (append (list
+                     (assoc 'resource x)
+                     ;; `car' is id, and it's faster than `assoc'
+                     (car x))))
+          (append (mb-search--url-tidy url) nil))
+  )
+
+(defun mb-search--url-format (item)
+  "Formats ITEM into a string.
+The ITEM should be an alist returned by `mb-search--url-exact'."
+  ;; (concat
+   (propertize (cdr (assoc 'resource item)) 'face 'underline)
+   ;; )
+  )
+
+(defun mb-search--url-select (url)
+  (mb-search-select (mb-search--url-exact url) #'mb-search--url-format "Url: " 'id))
+
+;;;###autoload
+(defun mb-search-url (url)
+  (interactive "sUrl: ")
+  (mb-search-open (mb-search--url-select url))
+  )
+
 (provide 'mb-search)
 ;;; mb-search.el ends here
