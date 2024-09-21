@@ -4,7 +4,7 @@
 
 ;; Author:  Oliwier Czerwiński <oliwier.czerwi@proton.me>
 ;; Keywords: convenience
-;; Version: 20240915
+;; Version: 20240921
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@
 (require 'url-http)
 (require 'json)
 
-(defconst mb-search-version "20240915")
+(defconst mb-search-version "20240921")
 
 (defun mb-search-user-agent ()
   "Returns a valid User-Agent string."
@@ -512,6 +512,54 @@ release dates, and IDs."
 (defun mb-search-recording (recording)
   (interactive "sRecording: ")
   (mb-search-open (mb-search--recording-select recording))
+  )
+
+;;; Instrument
+
+(defun mb-search--instrument (instrument)
+  "Searches for INSTRUMENT, and returns raw lisp data."
+  (mb-search-api "instrument" instrument)
+  )
+
+(defun mb-search--instrument-tidy (instrument)
+  "Searches for INSTRUMENT and returns a vector."
+  (cdr (assoc 'instruments (cdddr (mb-search--instrument instrument))))
+  )
+
+(defun mb-search--instrument-exact (instrument)
+  "Searches for INSTRUMENT, and returns an alist of names, disambiguations and IDs.
+If there is no disambiguation, it puts (disambiguation . \"\")."
+  (mapcar (lambda (x)
+            (append (list
+                     (assoc 'name x)
+                     (assoc 'type x)
+                     (if (assoc 'disambiguation x)
+                         (assoc 'disambiguation x)
+                       '(disambiguation . ""))
+                     ;; `car' is id, and it's faster than `assoc'
+                     (car x))))
+          (append (mb-search--instrument-tidy instrument) nil))
+  )
+
+(defun mb-search--instrument-format (item)
+  "Formats ITEM into a string.
+The ITEM should be an alist returned by `mb-search--instrument-exact'."
+  (concat
+   (propertize (cdr (assoc 'name item)) 'face 'underline)
+   " (" (propertize (cdr (assoc 'type item)) 'face 'italic)
+   ;; if there is disambiguation, add it
+   (unless (string= (cdr (assoc 'disambiguation item)) "")
+     (format ", %s" (cdr (assoc 'disambiguation item))))
+   ")"
+   ))
+
+(defun mb-search--instrument-select (instrument)
+  (mb-search-select (mb-search--instrument-exact instrument) #'mb-search--instrument-format "Instrument: " 'id))
+
+;;;###autoload
+(defun mb-search-instrument (instrument)
+  (interactive "sInstrument: ")
+  (mb-search-open (mb-search--instrument-select instrument))
   )
 
 (provide 'mb-search)

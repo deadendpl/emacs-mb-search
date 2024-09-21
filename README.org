@@ -16,14 +16,14 @@
 * Screenshot
 [[file:screenshot.png]]
 * Things to do [1/2]
-- Search types [11/16]
+- Search types [12/16]
   - [X] Annotation
   - [X] Area
   - [X] Artist
   - [X] Cdstub
   - [X] Event
-  - [ ] Genre
-  - [ ] Instrument
+  - [ ] Genre (not implemented officially)
+  - [X] Instrument
   - [ ] Label
   - [ ] Place
   - [X] Recording
