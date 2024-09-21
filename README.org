@@ -1,3 +1,10 @@
+* Description
+It uses =completing-read= to choose from list candidates.
+It's rather simple, most of the time only name and disambiguation is shown.
+
+Current issue is some letters displayed wrong.
+* Screenshot
+[[file:screenshot.png]]
 * Installation
 - With [[https://github.com/slotThe/vc-use-package][vc-use-package]] (installed manually)
 #+begin_src emacs-lisp
@@ -13,8 +20,6 @@
 #+begin_src emacs-lisp
 (package-vc-install "https://github/com/deadendpl/emacs-mb-search")
 #+end_src
-* Screenshot
-[[file:screenshot.png]]
 * Things to do [1/2]
 - Search types [15/15]
   - [X] Annotation
