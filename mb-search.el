@@ -562,5 +562,51 @@ The ITEM should be an alist returned by `mb-search--instrument-exact'."
   (mb-search-open (mb-search--instrument-select instrument))
   )
 
+;;; Label
+
+(defun mb-search--label (label)
+  "Searches for LABEL, and returns raw lisp data."
+  (mb-search-api "label" label)
+  )
+
+(defun mb-search--label-tidy (label)
+  "Searches for LABEL and returns a vector."
+  (cdr (assoc 'labels (cdddr (mb-search--label label))))
+  )
+
+(defun mb-search--label-exact (label)
+  "Searches for LABEL, and returns an alist of names, disambiguations and IDs.
+If there is no disambiguation, it puts (disambiguation . \"\")."
+  (mapcar (lambda (x)
+            (append (list
+                     (assoc 'name x)
+                     ;; (assoc 'type x)
+                     (if (assoc 'disambiguation x)
+                         (assoc 'disambiguation x)
+                       '(disambiguation . ""))
+                     ;; `car' is id, and it's faster than `assoc'
+                     (car x))))
+          (append (mb-search--label-tidy label) nil))
+  )
+
+(defun mb-search--label-format (item)
+  "Formats ITEM into a string.
+The ITEM should be an alist returned by `mb-search--label-exact'."
+  (concat
+   (propertize (cdr (assoc 'name item)) 'face 'underline)
+   ;; if there is disambiguation, add it
+   (unless (string= (cdr (assoc 'disambiguation item)) "")
+     (concat " (" (cdr (assoc 'disambiguation item)) ")")
+     )))
+
+(defun mb-search--label-select (label)
+  (mb-search-select (mb-search--label-exact label) #'mb-search--label-format "Label: " 'id))
+
+;;;###autoload
+(defun mb-search-label (label)
+  (interactive "sLabel: ")
+  (mb-search-open (mb-search--label-select label))
+  )
+
 (provide 'mb-search)
 ;;; mb-search.el ends here

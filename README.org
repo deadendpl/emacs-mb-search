@@ -16,7 +16,7 @@
 * Screenshot
 [[file:screenshot.png]]
 * Things to do [1/2]
-- Search types [12/16]
+- Search types [13/16]
   - [X] Annotation
   - [X] Area
   - [X] Artist
@@ -24,7 +24,7 @@
   - [X] Event
   - [ ] Genre (not implemented officially)
   - [X] Instrument
-  - [ ] Label
+  - [X] Label
   - [ ] Place
   - [X] Recording
   - [X] Release
