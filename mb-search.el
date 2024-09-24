@@ -4,7 +4,7 @@
 
 ;; Author:  Oliwier Czerwiński <oliwier.czerwi@proton.me>
 ;; Keywords: convenience
-;; Version: 20240921
+;; Version: 20240924
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@
 (require 'url-http)
 (require 'json)
 
-(defconst mb-search-version "20240921")
+(defconst mb-search-version "20240924")
 
 (defun mb-search-user-agent ()
   "Returns a valid User-Agent string."
@@ -46,6 +46,11 @@
       (if (assoc 'error output)
           (error (cdr (assoc 'error output)))
         output))))
+
+(defun mb-search--tidy (func query)
+  "Returns a data ready to be used."
+  (append (cdr (cadddr (funcall func query))) nil)
+  )
 
 (defun mb-search-select (data format-func prompt result)
   "Prompt the user to select a name from the list DATA and return the corresponding ID.
@@ -73,7 +78,7 @@ RESULT should be id in most cases."
 
 (defun mb-search--artist-tidy (artist)
   "Searches for ARTIST and returns a vector."
-  (cdr (assoc 'artists (cdddr (mb-search--artist artist))))
+  (mb-search--tidy #'mb-search--artist artist)
   )
 
 (defun mb-search--artist-exact (artist)
@@ -88,7 +93,7 @@ If there is no disambiguation, it puts (disambiguation . \"\")."
                        '(disambiguation . ""))
                      ;; `car' is id, and it's faster than `assoc'
                      (car x))))
-          (append (mb-search--artist-tidy artist) nil))
+          (mb-search--artist-tidy artist))
   )
 
 (defun mb-search--artist-format (item)
@@ -120,7 +125,7 @@ The ITEM should be an alist returned by `mb-search--artist-exact'."
 
 (defun mb-search--release-group-tidy (release-group)
   "Searches for RELEASE-GROUP and returns a vector."
-  (cdr (assoc 'release-groups (cdddr (mb-search--release-group release-group))))
+  (mb-search--tidy #'mb-search--release-group release-group)
   )
 
 (defun mb-search--release-group-exact (release-group)
@@ -134,7 +139,7 @@ release dates, and IDs."
                      (car x) ; id
                      (cons 'artist-name (cdaar (append (cdr (assoc 'artist-credit x)) nil)))
                      )))
-          (append (mb-search--release-group-tidy release-group) nil))
+          (mb-search--release-group-tidy release-group))
   )
 
 (defun mb-search--release-group-format (x)
@@ -163,7 +168,7 @@ release dates, and IDs."
 
 (defun mb-search--work-tidy (work)
   "Searches for WORK and returns a vector."
-  (cdr (assoc 'works (cdddr (mb-search--work work))))
+  (mb-search--tidy #'mb-search--work work)
   )
 
 ;; (defun mb-search--work-get-composer (relation)
@@ -192,7 +197,7 @@ If there is no disambiguation, it puts (disambiguation . \"\")."
                      ;;                          (append (cdr (assoc 'relations x)) nil)))
                      (car x))
                     ))
-          (append (mb-search--work-tidy work) nil))
+          (mb-search--work-tidy work))
   )
 
 (defun mb-search--work-format (item)
@@ -219,7 +224,7 @@ If there is no disambiguation, it puts (disambiguation . \"\")."
   (mb-search-api "release" release))
 
 (defun mb-search--release-tidy (release)
-  (cdr (assoc 'releases (cdddr (mb-search--release release)))))
+  (mb-search--tidy #'mb-search--release release))
 
 (defun mb-search--release-exact (release)
   "Searches for RELEASE, and returns an alist of titles, first
@@ -235,7 +240,7 @@ release dates, and IDs."
                      ;; (cons 'artist-sort-name
                      ;;       (cdr (assoc 'sort-name (cadar (append (cdr (assoc 'artist-credit x)) nil)))))
                      )))
-          (append (mb-search--release-tidy release) nil))
+          (mb-search--release-tidy release))
   )
 
 (defun mb-search--release-format (x)
@@ -260,7 +265,7 @@ release dates, and IDs."
   (mb-search-api "series" series))
 
 (defun mb-search--series-tidy (series)
-  (cdr (assoc 'series (cdddr (mb-search--series series)))))
+  (mb-search--tidy #'mb-search--series series))
 
 (defun mb-search--series-exact (series)
   "Searches for SERIES, and returns an alist of basic info. If there is no disambiguation, it puts (disambiguation . \"\")."
@@ -271,7 +276,7 @@ release dates, and IDs."
                      (assoc 'disambiguation x)
                      (car x) ; id
                      )))
-          (append (mb-search--series-tidy series) nil))
+          (mb-search--series-tidy series))
   )
 
 (defun mb-search--series-format (x)
@@ -298,13 +303,13 @@ release dates, and IDs."
   (mb-search-api "tag" tag))
 
 (defun mb-search--tag-tidy (tag)
-  (cdr (assoc 'tags (cdddr (mb-search--tag tag)))))
+  (mb-search--tidy #'mb-search--tag tag))
 
 (defun mb-search--tag-exact (tag)
   "Searches for TAG, and returns an list of names."
   (mapcar (lambda (x)
             (append (cdr (assoc 'name x))))
-          (append (mb-search--tag-tidy tag) nil))
+          (mb-search--tag-tidy tag))
   )
 
 (defun mb-search--tag-format (x)
@@ -325,7 +330,7 @@ release dates, and IDs."
   (mb-search-api "annotation" annotation))
 
 (defun mb-search--annotation-tidy (annotation)
-  (cdr (assoc 'annotations (cdddr (mb-search--annotation annotation)))))
+  (mb-search--tidy #'mb-search--annotation annotation))
 
 (defun mb-search--annotation-exact (annotation)
   "Searches for ANNOTATION, and returns an alist of basic info."
@@ -336,7 +341,7 @@ release dates, and IDs."
                      (assoc 'name x)
                      (assoc 'entity x) ; id
                      )))
-          (append (mb-search--annotation-tidy annotation) nil))
+          (mb-search--annotation-tidy annotation))
   )
 
 (defun mb-search--annotation-format (x)
@@ -361,7 +366,7 @@ release dates, and IDs."
   (mb-search-api "area" area))
 
 (defun mb-search--area-tidy (area)
-  (cdr (cadddr (mb-search--area area))))
+  (mb-search--tidy #'mb-search--area area))
 
 (defun mb-search--area-exact (area)
   "Searches for AREA, and returns an alist of basic info."
@@ -371,7 +376,7 @@ release dates, and IDs."
                      (assoc 'type x)
                      (car x) ; id
                      )))
-          (append (mb-search--area-tidy area) nil))
+          (mb-search--area-tidy area))
   )
 
 (defun mb-search--area-format (x)
@@ -395,7 +400,7 @@ release dates, and IDs."
   (mb-search-api "cdstub" cdstub))
 
 (defun mb-search--cdstub-tidy (cdstub)
-  (cdr (assoc 'cdstubs (cdddr (mb-search--cdstub cdstub)))))
+  (mb-search--tidy #'mb-search--cdstub cdstub))
 
 (defun mb-search--cdstub-exact (cdstub)
   "Searches for CDSTUB, and returns an alist of basic info."
@@ -405,7 +410,7 @@ release dates, and IDs."
                      (assoc 'artist x)
                      (car x) ; id
                      )))
-          (append (mb-search--cdstub-tidy cdstub) nil))
+          (mb-search--cdstub-tidy cdstub))
   )
 
 (defun mb-search--cdstub-format (x)
@@ -431,7 +436,7 @@ release dates, and IDs."
   (mb-search-api "event" event))
 
 (defun mb-search--event-tidy (event)
-  (cdr (assoc 'events (cdddr (mb-search--event event)))))
+  (mb-search--tidy #'mb-search--event event))
 
 (defun mb-search--event-exact (event)
   "Searches for EVENT, and returns an alist of basic info. If there is no disambiguation, it puts (disambiguation . \"\")."
@@ -443,7 +448,7 @@ release dates, and IDs."
                      (assoc 'life-span x)
                      (car x) ; id
                      )))
-          (append (mb-search--event-tidy event) nil))
+          (mb-search--event-tidy event))
   )
 
 (defun mb-search--event-format (x)
@@ -474,7 +479,7 @@ release dates, and IDs."
   (mb-search-api "recording" recording))
 
 (defun mb-search--recording-tidy (recording)
-  (cdr (assoc 'recordings (cdddr (mb-search--recording recording)))))
+  (mb-search--tidy #'mb-search--recording recording))
 
 (defun mb-search--recording-exact (recording)
   "Searches for RECORDING, and returns an alist of basic info."
@@ -490,7 +495,7 @@ release dates, and IDs."
                      (assoc 'disambiguation x)
                      (car x) ; id
                      )))
-          (append (mb-search--recording-tidy recording) nil))
+          (mb-search--recording-tidy recording))
   )
 
 (defun mb-search--recording-format (x)
@@ -523,8 +528,7 @@ release dates, and IDs."
 
 (defun mb-search--instrument-tidy (instrument)
   "Searches for INSTRUMENT and returns a vector."
-  (cdr (assoc 'instruments (cdddr (mb-search--instrument instrument))))
-  )
+  (mb-search--tidy #'mb-search--instrument instrument))
 
 (defun mb-search--instrument-exact (instrument)
   "Searches for INSTRUMENT, and returns an alist of names, disambiguations and IDs.
@@ -538,7 +542,7 @@ If there is no disambiguation, it puts (disambiguation . \"\")."
                        '(disambiguation . ""))
                      ;; `car' is id, and it's faster than `assoc'
                      (car x))))
-          (append (mb-search--instrument-tidy instrument) nil))
+          (mb-search--instrument-tidy instrument))
   )
 
 (defun mb-search--instrument-format (item)
@@ -571,8 +575,7 @@ The ITEM should be an alist returned by `mb-search--instrument-exact'."
 
 (defun mb-search--label-tidy (label)
   "Searches for LABEL and returns a vector."
-  (cdr (assoc 'labels (cdddr (mb-search--label label))))
-  )
+  (mb-search--tidy #'mb-search--label label))
 
 (defun mb-search--label-exact (label)
   "Searches for LABEL, and returns an alist of names, disambiguations and IDs.
@@ -586,7 +589,7 @@ If there is no disambiguation, it puts (disambiguation . \"\")."
                        '(disambiguation . ""))
                      ;; `car' is id, and it's faster than `assoc'
                      (car x))))
-          (append (mb-search--label-tidy label) nil))
+          (mb-search--label-tidy label))
   )
 
 (defun mb-search--label-format (item)
@@ -617,8 +620,7 @@ The ITEM should be an alist returned by `mb-search--label-exact'."
 
 (defun mb-search--place-tidy (place)
   "Searches for PLACE and returns a vector."
-  (cdr (assoc 'places (cdddr (mb-search--place place))))
-  )
+  (mb-search--tidy #'mb-search--place place))
 
 (defun mb-search--place-exact (place)
   "Searches for PLACE, and returns an alist of names, disambiguations and IDs.
@@ -632,7 +634,7 @@ If there is no disambiguation, it puts (disambiguation . \"\")."
                        '(disambiguation . ""))
                      ;; `car' is id, and it's faster than `assoc'
                      (car x))))
-          (append (mb-search--place-tidy place) nil))
+          (mb-search--place-tidy place))
   )
 
 (defun mb-search--place-format (item)
@@ -663,7 +665,7 @@ The ITEM should be an alist returned by `mb-search--place-exact'."
 
 (defun mb-search--url-tidy (url)
   "Searches for URL and returns a vector."
-  (cdr (assoc 'urls (cdddr (mb-search--url url))))
+  (mb-search--tidy #'mb-search--url url)
   )
 
 (defun mb-search--url-exact (url)
@@ -673,7 +675,7 @@ The ITEM should be an alist returned by `mb-search--place-exact'."
                      (assoc 'resource x)
                      ;; `car' is id, and it's faster than `assoc'
                      (car x))))
-          (append (mb-search--url-tidy url) nil))
+          (mb-search--url-tidy url))
   )
 
 (defun mb-search--url-format (item)
