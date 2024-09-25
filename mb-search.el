@@ -4,7 +4,7 @@
 
 ;; Author:  Oliwier Czerwiński <oliwier.czerwi@proton.me>
 ;; Keywords: convenience
-;; Version: 20240924
+;; Version: 20240925
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@
 (require 'url-http)
 (require 'json)
 
-(defconst mb-search-version "20240924")
+(defconst mb-search-version "20240925")
 
 (defun mb-search-user-agent ()
   "Returns a valid User-Agent string."
@@ -48,8 +48,13 @@
         output))))
 
 (defun mb-search--tidy (func query)
-  "Returns a data ready to be used."
-  (append (cdr (cadddr (funcall func query))) nil)
+  "Returns a data ready to be used.
+It checks for results, and errors if there are none."
+  (let ((data (append (cdr (cadddr (funcall func query))) nil)))
+    (if (eq (length data) 0)
+        (error "No results were found.")
+      data)
+    )
   )
 
 (defun mb-search-select (data format-func prompt result)
