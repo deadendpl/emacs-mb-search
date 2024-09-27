@@ -4,7 +4,7 @@
 
 ;; Author:  Oliwier Czerwiński <oliwier.czerwi@proton.me>
 ;; Keywords: convenience
-;; Version: 20240925
+;; Version: 20240927
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -29,7 +29,12 @@
 (require 'url-http)
 (require 'json)
 
-(defconst mb-search-version "20240925")
+(defconst mb-search-version "20240927")
+
+(defcustom mb-search-limit 25
+  "The maximum number of entries returned.
+Only values between 1 and 100 (both inclusive) are allowed."
+  :type 'integer)
 
 (defun mb-search-user-agent ()
   "Returns a valid User-Agent string."
@@ -40,7 +45,7 @@
   "Searches for QUERY of TYPE, and returns raw lisp data."
   (with-current-buffer
       (let ((url-request-extra-headers `(("User-Agent" . ,(mb-search-user-agent)))))
-        (url-retrieve-synchronously (format "https://musicbrainz.org/ws/2/%s?query=%s&fmt=json" type query)))
+        (url-retrieve-synchronously (format "https://musicbrainz.org/ws/2/%s?query=%s&fmt=json&limit=%s" type query mb-search-limit)))
     (goto-char url-http-end-of-headers)
     (let ((output (json-read)))
       (if (assoc 'error output)
