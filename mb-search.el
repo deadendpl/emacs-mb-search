@@ -4,7 +4,7 @@
 
 ;; Author:  Oliwier Czerwiński <oliwier.czerwi@proton.me>
 ;; Keywords: convenience
-;; Version: 20240927
+;; Version: 20241004
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@
 (require 'url-http)
 (require 'json)
 
-(defconst mb-search-version "20240927")
+(defconst mb-search-version "20241004")
 
 (defcustom mb-search-limit 25
   "The maximum number of entries returned.
@@ -255,8 +255,8 @@ release dates, and IDs."
 
 (defun mb-search--release-format (x)
   (concat
-   (if (cdr (assoc 'date x))
-       (concat (cdr (assoc 'date x)) " - "))
+   (unless (string= (cdr (assoc 'date x)) "")
+     (concat (cdr (assoc 'date x)) " - "))
    (propertize (cdr (assoc 'title x)) 'face 'underline)
    ))
 
