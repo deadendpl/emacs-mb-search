@@ -92,15 +92,12 @@ RESULT should be id in most cases."
   )
 
 (defun mb-search--artist-exact (artist)
-  "Searches for ARTIST, and returns an alist of names, disambiguations and IDs.
-If there is no disambiguation, it puts (disambiguation . \"\")."
+  "Searches for ARTIST, and returns an alist of names, disambiguations and IDs."
   (mapcar (lambda (x)
             (append (list
                      (assoc 'name x)
                      (assoc 'sort-name x)
-                     (if (assoc 'disambiguation x)
-                         (assoc 'disambiguation x)
-                       '(disambiguation . ""))
+                     (assoc 'disambiguation x)
                      ;; `car' is id, and it's faster than `assoc'
                      (car x))))
           (mb-search--artist-tidy artist))
@@ -195,14 +192,11 @@ release dates, and IDs."
 ;;   )
 
 (defun mb-search--work-exact (work)
-  "Searches for WORK, and returns an alist of names, disambiguations and IDs.
-If there is no disambiguation, it puts (disambiguation . \"\")."
+  "Searches for WORK, and returns an alist of names, disambiguations and IDs."
   (mapcar (lambda (x)
             (append (list
                      (assoc 'title x)
-                     (if (assoc 'disambiguation x)
-                         (assoc 'disambiguation x)
-                       '(disambiguation . ""))
+                     (assoc 'disambiguation x)
                      ;; (cons 'composers (mapcar #'mb-search--work-get-composer
                      ;;                          (append (cdr (assoc 'relations x)) nil)))
                      (car x))
@@ -215,7 +209,7 @@ If there is no disambiguation, it puts (disambiguation . \"\")."
   (concat
    (propertize (cdr (assoc 'title item)) 'face 'underline)
    ;; if there is disambiguation, add it
-   (unless (string= (cdr (assoc 'disambiguation item)) "")
+   (if (assoc 'disambiguation item)
      (concat " (" (cdr (assoc 'disambiguation item)) ")"))
    ))
 
@@ -242,9 +236,7 @@ release dates, and IDs."
   (mapcar (lambda (x)
             (append (list
                      (assoc 'title x)
-                     (if (assoc 'date x)
-                         (assoc 'date x)
-                       '(date . ""))
+                     (assoc 'date x)
                      (car x) ; id
                      ;; (cons 'artist-name (cdr (assoc 'name (car (append (cdr (assoc 'artist-credit (car x))) nil)))))
                      ;; (cons 'artist-sort-name
@@ -255,7 +247,7 @@ release dates, and IDs."
 
 (defun mb-search--release-format (x)
   (concat
-   (unless (string= (cdr (assoc 'date x)) "")
+   (if (assoc 'date x)
      (concat (cdr (assoc 'date x)) " - "))
    (propertize (cdr (assoc 'title x)) 'face 'underline)
    ))
@@ -278,7 +270,7 @@ release dates, and IDs."
   (mb-search--tidy #'mb-search--series series))
 
 (defun mb-search--series-exact (series)
-  "Searches for SERIES, and returns an alist of basic info. If there is no disambiguation, it puts (disambiguation . \"\")."
+  "Searches for SERIES, and returns an alist of basic info."
   (mapcar (lambda (x)
             (append (list
                      (assoc 'name x)
@@ -426,7 +418,7 @@ release dates, and IDs."
 (defun mb-search--cdstub-format (x)
   (concat
    (propertize (cdr (assoc 'title x)) 'face 'underline)
-   (unless (string= (cdr (assoc 'artist x)) "")
+   (if (assoc 'artist x)
      (concat " (" (cdr (assoc 'artist x)) ")")
      )
    ))
@@ -449,7 +441,7 @@ release dates, and IDs."
   (mb-search--tidy #'mb-search--event event))
 
 (defun mb-search--event-exact (event)
-  "Searches for EVENT, and returns an alist of basic info. If there is no disambiguation, it puts (disambiguation . \"\")."
+  "Searches for EVENT, and returns an alist of basic info."
   (mapcar (lambda (x)
             (append (list
                      (assoc 'name x)
@@ -541,15 +533,12 @@ release dates, and IDs."
   (mb-search--tidy #'mb-search--instrument instrument))
 
 (defun mb-search--instrument-exact (instrument)
-  "Searches for INSTRUMENT, and returns an alist of names, disambiguations and IDs.
-If there is no disambiguation, it puts (disambiguation . \"\")."
+  "Searches for INSTRUMENT, and returns an alist of names, disambiguations and IDs."
   (mapcar (lambda (x)
             (append (list
                      (assoc 'name x)
                      (assoc 'type x)
-                     (if (assoc 'disambiguation x)
-                         (assoc 'disambiguation x)
-                       '(disambiguation . ""))
+                     (assoc 'disambiguation x)
                      ;; `car' is id, and it's faster than `assoc'
                      (car x))))
           (mb-search--instrument-tidy instrument))
@@ -588,15 +577,12 @@ The ITEM should be an alist returned by `mb-search--instrument-exact'."
   (mb-search--tidy #'mb-search--label label))
 
 (defun mb-search--label-exact (label)
-  "Searches for LABEL, and returns an alist of names, disambiguations and IDs.
-If there is no disambiguation, it puts (disambiguation . \"\")."
+  "Searches for LABEL, and returns an alist of names, disambiguations and IDs."
   (mapcar (lambda (x)
             (append (list
                      (assoc 'name x)
                      ;; (assoc 'type x)
-                     (if (assoc 'disambiguation x)
-                         (assoc 'disambiguation x)
-                       '(disambiguation . ""))
+                     (assoc 'disambiguation x)
                      ;; `car' is id, and it's faster than `assoc'
                      (car x))))
           (mb-search--label-tidy label))
@@ -608,7 +594,7 @@ The ITEM should be an alist returned by `mb-search--label-exact'."
   (concat
    (propertize (cdr (assoc 'name item)) 'face 'underline)
    ;; if there is disambiguation, add it
-   (unless (string= (cdr (assoc 'disambiguation item)) "")
+   (if (assoc 'disambiguation item)
      (concat " (" (cdr (assoc 'disambiguation item)) ")")
      )))
 
@@ -633,15 +619,12 @@ The ITEM should be an alist returned by `mb-search--label-exact'."
   (mb-search--tidy #'mb-search--place place))
 
 (defun mb-search--place-exact (place)
-  "Searches for PLACE, and returns an alist of names, disambiguations and IDs.
-If there is no disambiguation, it puts (disambiguation . \"\")."
+  "Searches for PLACE, and returns an alist of names, disambiguations and IDs."
   (mapcar (lambda (x)
             (append (list
                      (assoc 'name x)
                      (assoc 'type x)
-                     (if (assoc 'disambiguation x)
-                         (assoc 'disambiguation x)
-                       '(disambiguation . ""))
+                     (assoc 'disambiguation x)
                      ;; `car' is id, and it's faster than `assoc'
                      (car x))))
           (mb-search--place-tidy place))
