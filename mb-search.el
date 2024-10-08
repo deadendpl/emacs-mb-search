@@ -210,7 +210,7 @@ release dates, and IDs."
    (propertize (cdr (assoc 'title item)) 'face 'underline)
    ;; if there is disambiguation, add it
    (if (assoc 'disambiguation item)
-     (concat " (" (cdr (assoc 'disambiguation item)) ")"))
+       (concat " (" (cdr (assoc 'disambiguation item)) ")"))
    ))
 
 (defun mb-search--work-select (work)
@@ -248,7 +248,7 @@ release dates, and IDs."
 (defun mb-search--release-format (x)
   (concat
    (if (assoc 'date x)
-     (concat (cdr (assoc 'date x)) " - "))
+       (concat (cdr (assoc 'date x)) " - "))
    (propertize (cdr (assoc 'title x)) 'face 'underline)
    ))
 
@@ -419,7 +419,7 @@ release dates, and IDs."
   (concat
    (propertize (cdr (assoc 'title x)) 'face 'underline)
    (if (assoc 'artist x)
-     (concat " (" (cdr (assoc 'artist x)) ")")
+       (concat " (" (cdr (assoc 'artist x)) ")")
      )
    ))
 
@@ -595,7 +595,7 @@ The ITEM should be an alist returned by `mb-search--label-exact'."
    (propertize (cdr (assoc 'name item)) 'face 'underline)
    ;; if there is disambiguation, add it
    (if (assoc 'disambiguation item)
-     (concat " (" (cdr (assoc 'disambiguation item)) ")")
+       (concat " (" (cdr (assoc 'disambiguation item)) ")")
      )))
 
 (defun mb-search--label-select (label)
@@ -675,8 +675,8 @@ The ITEM should be an alist returned by `mb-search--place-exact'."
   "Formats ITEM into a string.
 The ITEM should be an alist returned by `mb-search--url-exact'."
   ;; (concat
-   (propertize (cdr (assoc 'resource item)) 'face 'underline)
-   ;; )
+  (propertize (cdr (assoc 'resource item)) 'face 'underline)
+  ;; )
   )
 
 (defun mb-search--url-select (url)
