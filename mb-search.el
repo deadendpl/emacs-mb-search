@@ -4,7 +4,7 @@
 
 ;; Author:  Oliwier Czerwiński <oliwier.czerwi@proton.me>
 ;; Keywords: convenience
-;; Version: 20241008
+;; Version: 20241012
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@
 (require 'url-http)
 (require 'json)
 
-(defconst mb-search-version "20241008")
+(defconst mb-search-version "20241012")
 
 (defcustom mb-search-limit 25
   "The maximum number of entries returned.
@@ -67,7 +67,7 @@ It checks for results, and errors if there are none."
 The DATA should be the output of exact searching funcion like `mb-search--artist-exact'.
 FORMAT-FUNC is the formatting function.
 PROMPT is a string that's used as comepletion prompt.
-RESULT should be id in most cases."
+RESULT should be id symbol in most cases."
   (let* ((name-list (mapcar format-func data))
          (selected-name (completing-read prompt name-list)))
     (cdr (assoc result (cl-find-if
@@ -108,11 +108,17 @@ RESULT should be id in most cases."
 The ITEM should be an alist returned by `mb-search--artist-exact'."
   (concat
    (propertize (cdr (assoc 'name item)) 'face 'underline)
-   " (" (propertize (cdr (assoc 'sort-name item)) 'face 'italic)
-   ;; if there is disambiguation, add it
-   (unless (string= (cdr (assoc 'disambiguation item)) "")
-     (format ", %s" (cdr (assoc 'disambiguation item))))
-   ")"
+   (when (assoc 'disambiguation item)
+     (concat " ("
+             (if (string= (cdr (assoc 'sort-name item)) (cdr (assoc 'name item)))
+                 (concat (cdr (assoc 'disambiguation item)))
+               (concat
+                (propertize (cdr (assoc 'sort-name item)) 'face 'italic) ", "
+                (cdr (assoc 'disambiguation item)))
+               )
+             ")"
+             )
+     )
    ))
 
 (defun mb-search--artist-select (artist)
