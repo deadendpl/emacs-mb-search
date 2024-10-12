@@ -155,12 +155,14 @@ release dates, and IDs."
           (mb-search--release-group-tidy release-group))
   )
 
-(defun mb-search--release-group-format (x)
+(defun mb-search--release-group-format (item)
+  "Formats ITEM into a string.
+The ITEM should be an alist returned by `mb-search--release-group-exact'."
   (concat
-   (cdr (assoc 'first-release-date x)) " - "
-   (cdr (assoc 'primary-type x)) " - "
-   (propertize (cdr (assoc 'title x)) 'face 'underline) " - "
-   (cdr (assoc 'artist-name x))
+   (cdr (assoc 'first-release-date item)) " - "
+   (cdr (assoc 'primary-type item)) " - "
+   (propertize (cdr (assoc 'title item)) 'face 'underline) " - "
+   (cdr (assoc 'artist-name item))
    ))
 
 (defun mb-search--release-group-select (release-group)
@@ -211,7 +213,8 @@ release dates, and IDs."
   )
 
 (defun mb-search--work-format (item)
-  "Formats item into a string."
+  "Formats ITEM into a string.
+The ITEM should be an alist returned by `mb-search--work-exact'."
   (concat
    (propertize (cdr (assoc 'title item)) 'face 'underline)
    ;; if there is disambiguation, add it
@@ -251,11 +254,13 @@ release dates, and IDs."
           (mb-search--release-tidy release))
   )
 
-(defun mb-search--release-format (x)
+(defun mb-search--release-format (item)
+  "Formats ITEM into a string.
+The ITEM should be an alist returned by `mb-search--release-exact'."
   (concat
-   (if (assoc 'date x)
-       (concat (cdr (assoc 'date x)) " - "))
-   (propertize (cdr (assoc 'title x)) 'face 'underline)
+   (if (assoc 'date item)
+       (concat (cdr (assoc 'date item)) " - "))
+   (propertize (cdr (assoc 'title item)) 'face 'underline)
    ))
 
 (defun mb-search--release-select (release)
@@ -287,12 +292,14 @@ release dates, and IDs."
           (mb-search--series-tidy series))
   )
 
-(defun mb-search--series-format (x)
+(defun mb-search--series-format (item)
+  "Formats ITEM into a string.
+The ITEM should be an alist returned by `mb-search--series-exact'."
   (concat
-   (cdr (assoc 'name x))
-   " (" (cdr (assoc 'type x))
-   (if (assoc 'disambiguation x)
-       (concat ", " (cdr (assoc 'disambiguation x))))
+   (cdr (assoc 'name item))
+   " (" (cdr (assoc 'type item))
+   (if (assoc 'disambiguation item)
+       (concat ", " (cdr (assoc 'disambiguation item))))
    ")"
    ))
 
@@ -320,8 +327,10 @@ release dates, and IDs."
           (mb-search--tag-tidy tag))
   )
 
-(defun mb-search--tag-format (x)
-  (propertize x 'face 'underline))
+(defun mb-search--tag-format (item)
+  "Formats ITEM into a string.
+The ITEM should be an alist returned by `mb-search--tag-exact'."
+  (propertize item 'face 'underline))
 
 (defun mb-search--tag-select (tag)
   (completing-read "Tag: " (mb-search--tag-exact tag)))
@@ -352,11 +361,13 @@ release dates, and IDs."
           (mb-search--annotation-tidy annotation))
   )
 
-(defun mb-search--annotation-format (x)
+(defun mb-search--annotation-format (item)
+  "Formats ITEM into a string.
+The ITEM should be an alist returned by `mb-search--annotation-exact'."
   (concat
-   (propertize (cdr (assoc 'text x)) 'face 'underline)
-   " (" (cdr (assoc 'type x)) ": "
-   (propertize (cdr (assoc 'name x)) 'face 'italic)
+   (propertize (cdr (assoc 'teitemt item)) 'face 'underline)
+   " (" (cdr (assoc 'type item)) ": "
+   (propertize (cdr (assoc 'name item)) 'face 'italic) ")"
    ))
 
 (defun mb-search--annotation-select (annotation)
@@ -387,10 +398,12 @@ release dates, and IDs."
           (mb-search--area-tidy area))
   )
 
-(defun mb-search--area-format (x)
+(defun mb-search--area-format (item)
+  "Formats ITEM into a string.
+The ITEM should be an alist returned by `mb-search--area-exact'."
   (concat
-   (propertize (cdr (assoc 'name x)) 'face 'underline)
-   " (" (cdr (assoc 'type x)) ")"
+   (propertize (cdr (assoc 'name item)) 'face 'underline)
+   " (" (cdr (assoc 'type item)) ")"
    ))
 
 (defun mb-search--area-select (area)
@@ -421,11 +434,13 @@ release dates, and IDs."
           (mb-search--cdstub-tidy cdstub))
   )
 
-(defun mb-search--cdstub-format (x)
+(defun mb-search--cdstub-format (item)
+  "Formats ITEM into a string.
+The ITEM should be an alist returned by `mb-search--cdstub-exact'."
   (concat
-   (propertize (cdr (assoc 'title x)) 'face 'underline)
-   (if (assoc 'artist x)
-       (concat " (" (cdr (assoc 'artist x)) ")")
+   (propertize (cdr (assoc 'title item)) 'face 'underline)
+   (if (assoc 'artist item)
+       (concat " (" (cdr (assoc 'artist item)) ")")
      )
    ))
 
@@ -459,11 +474,13 @@ release dates, and IDs."
           (mb-search--event-tidy event))
   )
 
-(defun mb-search--event-format (x)
+(defun mb-search--event-format (item)
+  "Formats ITEM into a string.
+The ITEM should be an alist returned by `mb-search--event-exact'."
   (concat
-   (propertize (cdr (assoc 'name x)) 'face 'underline)
-   (let ((year (cdadr (assoc 'life-span x)))
-         (disambiguation (cdr (assoc 'disambiguation x))))
+   (propertize (cdr (assoc 'name item)) 'face 'underline)
+   (let ((year (cdadr (assoc 'life-span item)))
+         (disambiguation (cdr (assoc 'disambiguation item))))
      (when (or year disambiguation)
        (concat " ("
                (when year year)
@@ -506,11 +523,13 @@ release dates, and IDs."
           (mb-search--recording-tidy recording))
   )
 
-(defun mb-search--recording-format (x)
+(defun mb-search--recording-format (item)
+  "Formats ITEM into a string.
+The ITEM should be an alist returned by `mb-search--recording-exact'."
   (concat
-   (propertize (cdr (assoc 'title x)) 'face 'underline)
-   (let ((length (cdr (assoc 'length x)))
-         (disambiguation (cdr (assoc 'disambiguation x))))
+   (propertize (cdr (assoc 'title item)) 'face 'underline)
+   (let ((length (cdr (assoc 'length item)))
+         (disambiguation (cdr (assoc 'disambiguation item))))
      (when (or length disambiguation)
        (concat " ("
                (when length length)
