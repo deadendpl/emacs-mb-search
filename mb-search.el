@@ -4,7 +4,7 @@
 
 ;; Author:  Oliwier Czerwiński <oliwier.czerwi@proton.me>
 ;; Keywords: convenience
-;; Version: 20241012
+;; Version: 20241019
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@
 (require 'url-http)
 (require 'json)
 
-(defconst mb-search-version "20241012")
+(defconst mb-search-version "20241019")
 
 (defcustom mb-search-limit 25
   "The maximum number of entries returned.
@@ -365,7 +365,7 @@ The ITEM should be an alist returned by `mb-search--tag-exact'."
   "Formats ITEM into a string.
 The ITEM should be an alist returned by `mb-search--annotation-exact'."
   (concat
-   (propertize (cdr (assoc 'teitemt item)) 'face 'underline)
+   (propertize (cdr (assoc 'text item)) 'face 'underline)
    " (" (cdr (assoc 'type item)) ": "
    (propertize (cdr (assoc 'name item)) 'face 'italic) ")"
    ))
