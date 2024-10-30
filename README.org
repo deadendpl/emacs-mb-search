@@ -1,8 +1,10 @@
 * Description
-It uses =completing-read= to choose from list candidates.
-It's rather simple, most of the time only name and disambiguation is shown.
+It uses =completing-read= to choose from a list of candidates.
+It's rather simple, most of the time only name and disambiguation are shown.
 
-Current issue is some letters displayed wrong.
+If you have [[https://curl.se/][curl]] installed, it will be used.
+Otherwise, it will use built-in url library.
+Beware that some symbols are not rendered correctly when using url library.
 * Screenshot
 [[file:screenshot.png]]
 * Installation
@@ -14,13 +16,13 @@ Current issue is some letters displayed wrong.
 - With [[https://github.com/slotThe/vc-use-package][vc-use-package]] (built into Emacs 30+)
 #+begin_src emacs-lisp
 (use-package emacs-mb-search
-  :vc (:url "https://github/com/deadendpl/emacs-mb-search"))
+  :vc (:url "https://github.com/deadendpl/emacs-mb-search"))
 #+end_src
 - Without [[https://github.com/slotThe/vc-use-package][vc-use-package]]
 #+begin_src emacs-lisp
-(package-vc-install "https://github/com/deadendpl/emacs-mb-search")
+(package-vc-install "https://github.com/deadendpl/emacs-mb-search")
 #+end_src
-* Things to do [1/2]
+* Things to do [2/2]
 - Search types [15/15]
   - [X] Annotation
   - [X] Area
@@ -38,5 +40,5 @@ Current issue is some letters displayed wrong.
   - [X] Tag
   - [X] URL
   - [X] Work
-- [ ] Fix non latin symbols
+- [X] Fix non latin symbols
 - [X] Fix naming scheme

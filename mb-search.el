@@ -4,7 +4,7 @@
 
 ;; Author:  Oliwier Czerwiński <oliwier.czerwi@proton.me>
 ;; Keywords: convenience
-;; Version: 20241019
+;; Version: 20241030
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -21,7 +21,8 @@
 
 ;;; Commentary:
 
-;; NOTE non latin characters are not displayed correctly
+;; NOTE non latin characters are not displayed correctly unless there
+;; is curl installed
 
 ;;; Code:
 
@@ -29,20 +30,24 @@
 (require 'url-http)
 (require 'json)
 
-(defconst mb-search-version "20241019")
+(defconst mb-search-version "20241029")
 
 (defcustom mb-search-limit 25
   "The maximum number of entries returned.
 Only values between 1 and 100 (both inclusive) are allowed."
   :type 'integer)
 
+(defvar mb-search-curl-p (executable-find "curl")
+  "Non-nil means curl is in path.")
+
 (defun mb-search-user-agent ()
   "Returns a valid User-Agent string."
   (format "emacs-mb-search/%s (https://github.com/deadendpl/emacs-mb-search)" mb-search-version)
   )
 
-(defun mb-search-api (type query)
-  "Searches for QUERY of TYPE, and returns raw lisp data."
+(defun mb-search-api--url (type query)
+  "Searches for QUERY of TYPE, and returns raw lisp data.
+It uses built-in url package."
   (with-current-buffer
       (let ((url-request-extra-headers `(("User-Agent" . ,(mb-search-user-agent)))))
         (url-retrieve-synchronously (format "https://musicbrainz.org/ws/2/%s?query=%s&fmt=json&limit=%s" type query mb-search-limit)))
@@ -51,6 +56,25 @@ Only values between 1 and 100 (both inclusive) are allowed."
       (if (assoc 'error output)
           (error (cdr (assoc 'error output)))
         output))))
+
+(defun mb-search-api--curl (type query)
+  "Searches for QUERY of TYPE, and returns raw lisp data.
+It uses curl."
+  (let ((query (url-hexify-string query)))
+    (with-temp-buffer
+      (call-process "curl" nil t nil "-s" "-A" (mb-search-user-agent) (format "https://musicbrainz.org/ws/2/%s?query=%s&fmt=json&limit=%s" type query mb-search-limit))
+      (goto-char (point-min))
+      (let ((output (json-read)))
+        (if (assoc 'error output)
+            (error (cdr (assoc 'error output)))
+          output))))
+  )
+
+(defun mb-search-api (type query)
+  "Searches for QUERY of TYPE, and returns raw lisp data."
+  (if mb-search-curl-p
+      (mb-search-api--curl type query)
+    (mb-search-api--url type query)))
 
 (defun mb-search--tidy (func query)
   "Returns a data ready to be used.
@@ -69,7 +93,7 @@ FORMAT-FUNC is the formatting function.
 PROMPT is a string that's used as comepletion prompt.
 RESULT should be id symbol in most cases."
   (let* ((name-list (mapcar format-func data))
-         (selected-name (completing-read prompt name-list)))
+         (selected-name (completing-read prompt name-list nil t)))
     (cdr (assoc result (cl-find-if
                         (lambda (item)
                           (string= (funcall format-func item) selected-name))
