@@ -30,7 +30,7 @@
 (require 'url-http)
 (require 'json)
 
-(defconst mb-search-version "20241029")
+(defconst mb-search-version "20241030")
 
 (defcustom mb-search-limit 25
   "The maximum number of entries returned.
