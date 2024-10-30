@@ -132,17 +132,17 @@ RESULT should be id symbol in most cases."
 The ITEM should be an alist returned by `mb-search--artist-exact'."
   (concat
    (propertize (cdr (assoc 'name item)) 'face 'underline)
-   (when (assoc 'disambiguation item)
-     (concat " ("
-             (if (string= (cdr (assoc 'sort-name item)) (cdr (assoc 'name item)))
-                 (concat (cdr (assoc 'disambiguation item)))
-               (concat
-                (propertize (cdr (assoc 'sort-name item)) 'face 'italic) ", "
-                (cdr (assoc 'disambiguation item)))
+   (if (assoc 'disambiguation item)
+       (concat " ("
+               (if (string= (cdr (assoc 'sort-name item)) (cdr (assoc 'name item)))
+                   (concat (cdr (assoc 'disambiguation item)))
+                 (concat
+                  (propertize (cdr (assoc 'sort-name item)) 'face 'italic) ", "
+                  (cdr (assoc 'disambiguation item)))
+                 )
+               ")"
                )
-             ")"
-             )
-     )
+     (concat " (" (cdr (assoc 'sort-name item)) ")"))
    ))
 
 (defun mb-search--artist-select (artist)
