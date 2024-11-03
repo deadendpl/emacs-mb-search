@@ -4,7 +4,7 @@
 
 ;; Author:  Oliwier Czerwiński <oliwier.czerwi@proton.me>
 ;; Keywords: convenience
-;; Version: 20241030
+;; Version: 20241103
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@
 (require 'url-http)
 (require 'json)
 
-(defconst mb-search-version "20241030")
+(defconst mb-search-version "20241103")
 
 (defcustom mb-search-limit 25
   "The maximum number of entries returned.
@@ -142,7 +142,9 @@ The ITEM should be an alist returned by `mb-search--artist-exact'."
                  )
                ")"
                )
-     (concat " (" (cdr (assoc 'sort-name item)) ")"))
+     (if (string= (cdr (assoc 'sort-name item)) (cdr (assoc 'name item)))
+         nil
+       (concat " (" (cdr (assoc 'sort-name item)) ")")))
    ))
 
 (defun mb-search--artist-select (artist)
