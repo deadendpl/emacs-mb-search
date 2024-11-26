@@ -10,12 +10,12 @@ Beware that some symbols are not rendered correctly when using url library.
 * Installation
 - With [[https://github.com/slotThe/vc-use-package][vc-use-package]] (installed manually)
 #+begin_src emacs-lisp
-(use-package emacs-mb-search
+(use-package mb-search
   :vc (:fetcher github :repo "deadendpl/emacs-mb-search"))
 #+end_src
 - With [[https://github.com/slotThe/vc-use-package][vc-use-package]] (built into Emacs 30+)
 #+begin_src emacs-lisp
-(use-package emacs-mb-search
+(use-package mb-search
   :vc (:url "https://github.com/deadendpl/emacs-mb-search"))
 #+end_src
 - Without [[https://github.com/slotThe/vc-use-package][vc-use-package]]

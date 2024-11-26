@@ -4,7 +4,8 @@
 
 ;; Author:  Oliwier Czerwiński <oliwier.czerwi@proton.me>
 ;; Keywords: convenience
-;; Version: 20241103
+;; Version: 20241126
+;; URL: https://github.com/deadendpl/emacs-mb-search
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -30,7 +31,7 @@
 (require 'url-http)
 (require 'json)
 
-(defconst mb-search-version "20241103")
+(defconst mb-search-version "20241126")
 
 (defcustom mb-search-limit 25
   "The maximum number of entries returned.
@@ -735,7 +736,7 @@ The ITEM should be an alist returned by `mb-search--url-exact'."
 
 ;;;###autoload
 (defun mb-search-url (url)
-  (interactive "sUrl: ")
+  (interactive "sURL: ")
   (mb-search-open (mb-search--url-select url))
   )
 
