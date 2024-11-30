@@ -4,7 +4,7 @@
 
 ;; Author:  Oliwier Czerwiński <oliwier.czerwi@proton.me>
 ;; Keywords: convenience
-;; Version: 20241126
+;; Version: 20241130
 ;; URL: https://github.com/deadendpl/emacs-mb-search
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -31,7 +31,7 @@
 (require 'url-http)
 (require 'json)
 
-(defconst mb-search-version "20241126")
+(defconst mb-search-version "20241130")
 
 (defcustom mb-search-limit 25
   "The maximum number of entries returned.
@@ -273,6 +273,7 @@ release dates, and IDs."
             (append (list
                      (assoc 'title x)
                      (assoc 'date x)
+                     (assoc 'disambiguation x)
                      (car x) ; id
                      ;; (cons 'artist-name (cdr (assoc 'name (car (append (cdr (assoc 'artist-credit (car x))) nil)))))
                      ;; (cons 'artist-sort-name
@@ -288,6 +289,8 @@ The ITEM should be an alist returned by `mb-search--release-exact'."
    (if (assoc 'date item)
        (concat (cdr (assoc 'date item)) " - "))
    (propertize (cdr (assoc 'title item)) 'face 'underline)
+   (if (assoc 'disambiguation item)
+       (concat " (" (cdr (assoc 'disambiguation item)) ")"))
    ))
 
 (defun mb-search--release-select (release)
@@ -726,9 +729,7 @@ The ITEM should be an alist returned by `mb-search--place-exact'."
 (defun mb-search--url-format (item)
   "Formats ITEM into a string.
 The ITEM should be an alist returned by `mb-search--url-exact'."
-  ;; (concat
   (propertize (cdr (assoc 'resource item)) 'face 'underline)
-  ;; )
   )
 
 (defun mb-search--url-select (url)
