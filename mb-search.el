@@ -22,8 +22,25 @@
 
 ;;; Commentary:
 
-;; NOTE non latin characters are not displayed correctly unless there
-;; is curl installed
+;; This package allows doing MusicBrainz searches by using their [API].
+
+;; It uses built-in `completing-read' to choose candidates.
+
+;; It will use curl by default for doing API requests, because using
+;; built-in url library resulted in characters not rendering correctly.
+;; If you still want to use url library for API requests, you can change
+;; the value of `mb-search-curl-p' to nil.
+
+;; Usage
+
+;; Run mb-search-[type of entity] to do a search.
+
+;; Tips
+
+;; - You can set the limit of candidates in the `mb-search-limit'
+;;   variable. Values between 1 and 100 are allowed.
+
+;; [API] <https://musicbrainz.org/doc/MusicBrainz_API>
 
 ;;; Code:
 

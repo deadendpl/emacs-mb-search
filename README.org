@@ -1,10 +1,11 @@
 * Description
+This package allows doing MusicBrainz searches by using their [[https://musicbrainz.org/doc/MusicBrainz_API][API]].
+
 It uses =completing-read= to choose from a list of candidates.
 It's rather simple, most of the time only name and disambiguation are shown.
 
-If you have [[https://curl.se/][curl]] installed, it will be used.
-Otherwise, it will use built-in url library.
-Beware that some symbols are not rendered correctly when using url library.
+It will use [[https://curl.se/][curl]] by default for doing API requests, because using built-in url library resulted in characters not rendering correctly.
+If you still want to use url library for API requests, you can change the value of =mb-search-curl-p= to nil.
 * Screenshot
 [[file:screenshot.png]]
 * Installation
@@ -22,6 +23,26 @@ Beware that some symbols are not rendered correctly when using url library.
 #+begin_src emacs-lisp
 (package-vc-install "https://github.com/deadendpl/emacs-mb-search")
 #+end_src
+* Usage
+There is a command for every type of search that API allows.
+- =mb-search-annotation=
+- =mb-search-area=
+- =mb-search-artist=
+- =mb-search-cdstub=
+- =mb-search-event=
+- =mb-search-instrument=
+- =mb-search-label=
+- =mb-search-place=
+- =mb-search-recording=
+- =mb-search-release=
+- =mb-search-release-group=
+- =mb-search-series=
+- =mb-search-tag=
+- =mb-search-url=
+- =mb-search-work=
+* Tips
+You can set the amount of candidates in the =mb-search-limit= variable.
+Values between 1 and 100 are allowed.
 * Things to do [2/2]
 - Search types [15/15]
   - [X] Annotation
@@ -42,3 +63,5 @@ Beware that some symbols are not rendered correctly when using url library.
   - [X] Work
 - [X] Fix non latin symbols
 - [X] Fix naming scheme
+* Credits
+[[http://www.youtube.com/watch?v=XjKtkEMUYGc][This YouTube video]] inspired me to create this package.
