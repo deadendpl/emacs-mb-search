@@ -4,7 +4,7 @@
 
 ;; Author:  Oliwier Czerwiński <oliwier.czerwi@proton.me>
 ;; Keywords: convenience
-;; Version: 20241130
+;; Version: 20241225
 ;; URL: https://github.com/deadendpl/emacs-mb-search
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -31,7 +31,7 @@
 (require 'url-http)
 (require 'json)
 
-(defconst mb-search-version "20241130")
+(defconst mb-search-version "20241225")
 
 (defcustom mb-search-limit 25
   "The maximum number of entries returned.
@@ -43,7 +43,8 @@ Only values between 1 and 100 (both inclusive) are allowed."
 
 (defun mb-search-user-agent ()
   "Returns a valid User-Agent string."
-  (format "emacs-mb-search/%s (https://github.com/deadendpl/emacs-mb-search)" mb-search-version)
+  (concat "emacs-mb-search/" mb-search-version
+          " (https://github.com/deadendpl/emacs-mb-search)")
   )
 
 (defun mb-search-api--url (type query)
@@ -88,8 +89,9 @@ It checks for results, and errors if there are none."
   )
 
 (defun mb-search-select (data format-func prompt result)
-  "Prompt the user to select a name from the list DATA and return the corresponding ID.
-The DATA should be the output of exact searching funcion like `mb-search--artist-exact'.
+  "Prompt the user to select a name from the list DATA and return the
+corresponding ID. The DATA should be the output of exact searching
+function like `mb-search--artist-exact'.
 FORMAT-FUNC is the formatting function.
 PROMPT is a string that's used as comepletion prompt.
 RESULT should be id symbol in most cases."
@@ -186,8 +188,10 @@ release dates, and IDs."
   "Formats ITEM into a string.
 The ITEM should be an alist returned by `mb-search--release-group-exact'."
   (concat
-   (cdr (assoc 'first-release-date item)) " - "
-   (cdr (assoc 'primary-type item)) " - "
+   (if (assoc 'first-release-date item)
+       (concat (cdr (assoc 'first-release-date item)) " - "))
+   (if (assoc 'primary-type item)
+       (concat (cdr (assoc 'primary-type item)) " - "))
    (propertize (cdr (assoc 'title item)) 'face 'underline) " - "
    (cdr (assoc 'artist-name item))
    ))
