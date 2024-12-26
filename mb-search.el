@@ -427,7 +427,7 @@ The ITEM should be an alist returned by `mb-search--annotation-exact'."
 ;;;###autoload
 (defun mb-search-annotation (annotation)
   (interactive "sAnnotation: ")
-  (mb-search-open (mb-search--annotation-select (mb-search--annotation-exact annotation)))
+  (mb-search-open (mb-search--annotation-select annotation))
   )
 
 ;;; Area
