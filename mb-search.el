@@ -152,19 +152,13 @@ RESULT should be id symbol in most cases."
 The ITEM should be an alist returned by `mb-search--artist-exact'."
   (concat
    (propertize (cdr (assoc 'name item)) 'face 'underline)
-   (if (assoc 'disambiguation item)
+   (let ((disambiguation (cdr (assoc 'disambiguation item)))
+         (sort-name (cdr (assoc 'sort-name item))))
+     (when disambiguation
        (concat " ("
-               (if (string= (cdr (assoc 'sort-name item)) (cdr (assoc 'name item)))
-                   (concat (cdr (assoc 'disambiguation item)))
-                 (concat
-                  (propertize (cdr (assoc 'sort-name item)) 'face 'italic) ", "
-                  (cdr (assoc 'disambiguation item)))
-                 )
-               ")"
-               )
-     (if (string= (cdr (assoc 'sort-name item)) (cdr (assoc 'name item)))
-         nil
-       (concat " (" (cdr (assoc 'sort-name item)) ")")))
+               (when (not (string= sort-name (cdr (assoc 'name item))))
+                 (concat (propertize sort-name 'face 'italic) ", "))
+               disambiguation ")")))
    ))
 
 (defun mb-search--artist-select (artist)
@@ -308,7 +302,9 @@ release dates, and IDs."
   "Formats ITEM into a string.
 The ITEM should be an alist returned by `mb-search--release-exact'."
   (concat
-   (if (assoc 'date item)
+   (if (and (assoc 'date item)
+            ;; there may be empty dates
+            (not (string= (cdr (assoc 'date item)) "")))
        (concat (cdr (assoc 'date item)) " - "))
    (propertize (cdr (assoc 'title item)) 'face 'underline)
    (if (assoc 'disambiguation item)
@@ -635,8 +631,8 @@ The ITEM should be an alist returned by `mb-search--instrument-exact'."
    (propertize (cdr (assoc 'name item)) 'face 'underline)
    " (" (propertize (cdr (assoc 'type item)) 'face 'italic)
    ;; if there is disambiguation, add it
-   (unless (string= (cdr (assoc 'disambiguation item)) "")
-     (format ", %s" (cdr (assoc 'disambiguation item))))
+   (if (assoc 'disambiguation item)
+       (concat ", " (cdr (assoc 'disambiguation item))))
    ")"
    ))
 
