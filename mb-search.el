@@ -4,7 +4,7 @@
 
 ;; Author:  Oliwier Czerwiński <oliwier.czerwi@proton.me>
 ;; Keywords: convenience
-;; Version: 20241225
+;; Version: 20241226
 ;; URL: https://github.com/deadendpl/emacs-mb-search
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -48,7 +48,7 @@
 (require 'url-http)
 (require 'json)
 
-(defconst mb-search-version "20241225")
+(defconst mb-search-version "20241226")
 
 (defcustom mb-search-limit 25
   "The maximum number of entries returned.
@@ -285,6 +285,7 @@ The ITEM should be an alist returned by `mb-search--work-exact'."
   (mb-search-api "release" release))
 
 (defun mb-search--release-tidy (release)
+  "Searches for RELEASE and returns a vector."
   (mb-search--tidy #'mb-search--release release))
 
 (defun mb-search--release-exact (release)
@@ -329,6 +330,7 @@ The ITEM should be an alist returned by `mb-search--release-exact'."
   (mb-search-api "series" series))
 
 (defun mb-search--series-tidy (series)
+  "Searches for SERIES and returns a vector."
   (mb-search--tidy #'mb-search--series series))
 
 (defun mb-search--series-exact (series)
@@ -369,6 +371,7 @@ The ITEM should be an alist returned by `mb-search--series-exact'."
   (mb-search-api "tag" tag))
 
 (defun mb-search--tag-tidy (tag)
+  "Searches for TAG and returns a vector."
   (mb-search--tidy #'mb-search--tag tag))
 
 (defun mb-search--tag-exact (tag)
@@ -398,6 +401,7 @@ The ITEM should be an alist returned by `mb-search--tag-exact'."
   (mb-search-api "annotation" annotation))
 
 (defun mb-search--annotation-tidy (annotation)
+  "Searches for ANNOTATION and returns a vector."
   (mb-search--tidy #'mb-search--annotation annotation))
 
 (defun mb-search--annotation-exact (annotation)
@@ -436,6 +440,7 @@ The ITEM should be an alist returned by `mb-search--annotation-exact'."
   (mb-search-api "area" area))
 
 (defun mb-search--area-tidy (area)
+  "Searches for AREA and returns a vector."
   (mb-search--tidy #'mb-search--area area))
 
 (defun mb-search--area-exact (area)
@@ -472,6 +477,7 @@ The ITEM should be an alist returned by `mb-search--area-exact'."
   (mb-search-api "cdstub" cdstub))
 
 (defun mb-search--cdstub-tidy (cdstub)
+  "Searches for CDSTUB and returns a vector."
   (mb-search--tidy #'mb-search--cdstub cdstub))
 
 (defun mb-search--cdstub-exact (cdstub)
@@ -510,6 +516,7 @@ The ITEM should be an alist returned by `mb-search--cdstub-exact'."
   (mb-search-api "event" event))
 
 (defun mb-search--event-tidy (event)
+  "Searches for EVENT and returns a vector."
   (mb-search--tidy #'mb-search--event event))
 
 (defun mb-search--event-exact (event)
@@ -555,6 +562,7 @@ The ITEM should be an alist returned by `mb-search--event-exact'."
   (mb-search-api "recording" recording))
 
 (defun mb-search--recording-tidy (recording)
+  "Searches for RECORDING and returns a vector."
   (mb-search--tidy #'mb-search--recording recording))
 
 (defun mb-search--recording-exact (recording)
