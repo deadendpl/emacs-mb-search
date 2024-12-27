@@ -4,7 +4,7 @@
 
 ;; Author:  Oliwier Czerwiński <oliwier.czerwi@proton.me>
 ;; Keywords: convenience
-;; Version: 20241226
+;; Version: 20241227
 ;; URL: https://github.com/deadendpl/emacs-mb-search
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -58,17 +58,17 @@ Only values between 1 and 100 (both inclusive) are allowed."
 (defvar mb-search-curl-p (executable-find "curl")
   "Non-nil means curl is in path.")
 
-(defun mb-search-user-agent ()
-  "Returns a valid User-Agent string."
+(defvar mb-search-user-agent
   (concat "emacs-mb-search/" mb-search-version
           " (https://github.com/deadendpl/emacs-mb-search)")
+  "A User agent string for mb-search."
   )
 
 (defun mb-search-api--url (type query)
   "Searches for QUERY of TYPE, and returns raw lisp data.
 It uses built-in url package."
   (with-current-buffer
-      (let ((url-request-extra-headers `(("User-Agent" . ,(mb-search-user-agent)))))
+      (let ((url-request-extra-headers `(("User-Agent" . ,mb-search-user-agent))))
         (url-retrieve-synchronously (format "https://musicbrainz.org/ws/2/%s?query=%s&fmt=json&limit=%s" type query mb-search-limit)))
     (goto-char url-http-end-of-headers)
     (let ((output (json-read)))
@@ -81,7 +81,7 @@ It uses built-in url package."
 It uses curl."
   (let ((query (url-hexify-string query)))
     (with-temp-buffer
-      (call-process "curl" nil t nil "-s" "-A" (mb-search-user-agent) (format "https://musicbrainz.org/ws/2/%s?query=%s&fmt=json&limit=%s" type query mb-search-limit))
+      (call-process "curl" nil t nil "-s" "-A" mb-search-user-agent (format "https://musicbrainz.org/ws/2/%s?query=%s&fmt=json&limit=%s" type query mb-search-limit))
       (goto-char (point-min))
       (let ((output (json-read)))
         (if (assoc 'error output)
