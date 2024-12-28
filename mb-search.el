@@ -4,7 +4,7 @@
 
 ;; Author:  Oliwier Czerwiński <oliwier.czerwi@proton.me>
 ;; Keywords: convenience
-;; Version: 20241227
+;; Version: 20241228
 ;; URL: https://github.com/deadendpl/emacs-mb-search
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -48,7 +48,7 @@
 (require 'url-http)
 (require 'json)
 
-(defconst mb-search-version "20241226")
+(defconst mb-search-version "20241228")
 
 (defcustom mb-search-limit 25
   "The maximum number of entries returned.
@@ -105,6 +105,15 @@ It checks for results, and errors if there are none."
     )
   )
 
+(defmacro mb-search-define-exact (type &rest args)
+  "Defines a exact retrieving function.
+TYPE is a string of entity type.
+ARGS are expressions used to retrieve info from car of tidy function."
+  `(defun ,(intern (format "mb-search--%s-exact" type)) (artist)
+     (mapcar (lambda (x)
+               (append (list ,@args)))
+             (,(intern (format "mb-search--%s-tidy" type)) artist))))
+
 (defun mb-search-select (data format-func prompt result)
   "Prompt the user to select a name from the list DATA and return the
 corresponding ID. The DATA should be the output of exact searching
@@ -135,17 +144,12 @@ RESULT should be id symbol in most cases."
   (mb-search--tidy #'mb-search--artist artist)
   )
 
-(defun mb-search--artist-exact (artist)
-  "Searches for ARTIST, and returns an alist of names, disambiguations and IDs."
-  (mapcar (lambda (x)
-            (append (list
-                     (assoc 'name x)
-                     (assoc 'sort-name x)
-                     (assoc 'disambiguation x)
-                     ;; `car' is id, and it's faster than `assoc'
-                     (car x))))
-          (mb-search--artist-tidy artist))
-  )
+(mb-search-define-exact "artist"
+                        (assoc 'name x)
+                        (assoc 'sort-name x)
+                        (assoc 'disambiguation x)
+                        ;; `car' is id, and it's faster than `assoc'
+                        (car x))
 
 (defun mb-search--artist-format (item)
   "Formats ITEM into a string.
@@ -181,19 +185,13 @@ The ITEM should be an alist returned by `mb-search--artist-exact'."
   (mb-search--tidy #'mb-search--release-group release-group)
   )
 
-(defun mb-search--release-group-exact (release-group)
-  "Searches for RELEASE-GROUP, and returns an alist of titles, first
-release dates, and IDs."
-  (mapcar (lambda (x)
-            (append (list
-                     (assoc 'title x)
-                     (assoc 'primary-type x)
-                     (assoc 'first-release-date x)
-                     (car x) ; id
-                     (cons 'artist-name (cdaar (append (cdr (assoc 'artist-credit x)) nil)))
-                     )))
-          (mb-search--release-group-tidy release-group))
-  )
+(mb-search-define-exact "release-group"
+                        (assoc 'title x)
+                        (assoc 'primary-type x)
+                        (assoc 'first-release-date x)
+                        (car x) ; id
+                        (cons 'artist-name (cdaar (append (cdr (assoc
+                                                                'artist-credit x)) nil))))
 
 (defun mb-search--release-group-format (item)
   "Formats ITEM into a string.
@@ -241,18 +239,10 @@ The ITEM should be an alist returned by `mb-search--release-group-exact'."
 ;;     "")
 ;;   )
 
-(defun mb-search--work-exact (work)
-  "Searches for WORK, and returns an alist of names, disambiguations and IDs."
-  (mapcar (lambda (x)
-            (append (list
-                     (assoc 'title x)
-                     (assoc 'disambiguation x)
-                     ;; (cons 'composers (mapcar #'mb-search--work-get-composer
-                     ;;                          (append (cdr (assoc 'relations x)) nil)))
-                     (car x))
-                    ))
-          (mb-search--work-tidy work))
-  )
+(mb-search-define-exact "work"
+                        (assoc 'title x)
+                        (assoc 'disambiguation x)
+                        (car x))
 
 (defun mb-search--work-format (item)
   "Formats ITEM into a string.
@@ -282,21 +272,11 @@ The ITEM should be an alist returned by `mb-search--work-exact'."
   "Searches for RELEASE and returns a vector."
   (mb-search--tidy #'mb-search--release release))
 
-(defun mb-search--release-exact (release)
-  "Searches for RELEASE, and returns an alist of titles, first
-release dates, and IDs."
-  (mapcar (lambda (x)
-            (append (list
-                     (assoc 'title x)
-                     (assoc 'date x)
-                     (assoc 'disambiguation x)
-                     (car x) ; id
-                     ;; (cons 'artist-name (cdr (assoc 'name (car (append (cdr (assoc 'artist-credit (car x))) nil)))))
-                     ;; (cons 'artist-sort-name
-                     ;;       (cdr (assoc 'sort-name (cadar (append (cdr (assoc 'artist-credit x)) nil)))))
-                     )))
-          (mb-search--release-tidy release))
-  )
+(mb-search-define-exact "release"
+                        (assoc 'title x)
+                        (assoc 'date x)
+                        (assoc 'disambiguation x)
+                        (car x))
 
 (defun mb-search--release-format (item)
   "Formats ITEM into a string.
@@ -329,17 +309,11 @@ The ITEM should be an alist returned by `mb-search--release-exact'."
   "Searches for SERIES and returns a vector."
   (mb-search--tidy #'mb-search--series series))
 
-(defun mb-search--series-exact (series)
-  "Searches for SERIES, and returns an alist of basic info."
-  (mapcar (lambda (x)
-            (append (list
-                     (assoc 'name x)
-                     (assoc 'type x)
-                     (assoc 'disambiguation x)
-                     (car x) ; id
-                     )))
-          (mb-search--series-tidy series))
-  )
+(mb-search-define-exact "series"
+                        (assoc 'name x)
+                        (assoc 'type x)
+                        (assoc 'disambiguation x)
+                        (car x))
 
 (defun mb-search--series-format (item)
   "Formats ITEM into a string.
@@ -370,12 +344,7 @@ The ITEM should be an alist returned by `mb-search--series-exact'."
   "Searches for TAG and returns a vector."
   (mb-search--tidy #'mb-search--tag tag))
 
-(defun mb-search--tag-exact (tag)
-  "Searches for TAG, and returns an list of names."
-  (mapcar (lambda (x)
-            (append (cdr (assoc 'name x))))
-          (mb-search--tag-tidy tag))
-  )
+(mb-search-define-exact "tag" (append (cdr (assoc 'name x))))
 
 (defun mb-search--tag-format (item)
   "Formats ITEM into a string.
@@ -400,17 +369,11 @@ The ITEM should be an alist returned by `mb-search--tag-exact'."
   "Searches for ANNOTATION and returns a vector."
   (mb-search--tidy #'mb-search--annotation annotation))
 
-(defun mb-search--annotation-exact (annotation)
-  "Searches for ANNOTATION, and returns an alist of basic info."
-  (mapcar (lambda (x)
-            (append (list
-                     (assoc 'text x)
-                     (assoc 'type x)
-                     (assoc 'name x)
-                     (assoc 'entity x) ; id
-                     )))
-          (mb-search--annotation-tidy annotation))
-  )
+(mb-search-define-exact "annotation"
+                        (assoc 'text x)
+                        (assoc 'type x)
+                        (assoc 'name x)
+                        (assoc 'entity x))
 
 (defun mb-search--annotation-format (item)
   "Formats ITEM into a string.
@@ -439,16 +402,10 @@ The ITEM should be an alist returned by `mb-search--annotation-exact'."
   "Searches for AREA and returns a vector."
   (mb-search--tidy #'mb-search--area area))
 
-(defun mb-search--area-exact (area)
-  "Searches for AREA, and returns an alist of basic info."
-  (mapcar (lambda (x)
-            (append (list
-                     (assoc 'name x)
-                     (assoc 'type x)
-                     (car x) ; id
-                     )))
-          (mb-search--area-tidy area))
-  )
+(mb-search-define-exact "area"
+                        (assoc 'name x)
+                        (assoc 'type x)
+                        (car x))
 
 (defun mb-search--area-format (item)
   "Formats ITEM into a string.
@@ -476,16 +433,10 @@ The ITEM should be an alist returned by `mb-search--area-exact'."
   "Searches for CDSTUB and returns a vector."
   (mb-search--tidy #'mb-search--cdstub cdstub))
 
-(defun mb-search--cdstub-exact (cdstub)
-  "Searches for CDSTUB, and returns an alist of basic info."
-  (mapcar (lambda (x)
-            (append (list
-                     (assoc 'title x)
-                     (assoc 'artist x)
-                     (car x) ; id
-                     )))
-          (mb-search--cdstub-tidy cdstub))
-  )
+(mb-search-define-exact "cdstub"
+                        (assoc 'title x)
+                        (assoc 'artist x)
+                        (car x))
 
 (defun mb-search--cdstub-format (item)
   "Formats ITEM into a string.
@@ -515,18 +466,12 @@ The ITEM should be an alist returned by `mb-search--cdstub-exact'."
   "Searches for EVENT and returns a vector."
   (mb-search--tidy #'mb-search--event event))
 
-(defun mb-search--event-exact (event)
-  "Searches for EVENT, and returns an alist of basic info."
-  (mapcar (lambda (x)
-            (append (list
-                     (assoc 'name x)
-                     (assoc 'type x)
-                     (assoc 'disambiguation x)
-                     (assoc 'life-span x)
-                     (car x) ; id
-                     )))
-          (mb-search--event-tidy event))
-  )
+(mb-search-define-exact "event"
+                        (assoc 'name x)
+                        (assoc 'type x)
+                        (assoc 'disambiguation x)
+                        (assoc 'life-span x)
+                        (car x))
 
 (defun mb-search--event-format (item)
   "Formats ITEM into a string.
@@ -561,22 +506,16 @@ The ITEM should be an alist returned by `mb-search--event-exact'."
   "Searches for RECORDING and returns a vector."
   (mb-search--tidy #'mb-search--recording recording))
 
-(defun mb-search--recording-exact (recording)
-  "Searches for RECORDING, and returns an alist of basic info."
-  (mapcar (lambda (x)
-            (append (list
-                     (assoc 'title x)
-                     ;; calculating time as it's in ms
-                     (if (assoc 'length x)
-                         (let* ((total-seconds (/ (cdr (assoc 'length x)) 1000))
-                                (minutes (/ total-seconds 60))
-                                (seconds (% total-seconds 60)))
-                           (cons 'length (format "%d:%02d" minutes seconds))))
-                     (assoc 'disambiguation x)
-                     (car x) ; id
-                     )))
-          (mb-search--recording-tidy recording))
-  )
+(mb-search-define-exact "recording"
+                        (assoc 'title x)
+                        ;; calculating time as it's in ms
+                        (if (assoc 'length x)
+                            (let* ((total-seconds (/ (cdr (assoc 'length x)) 1000))
+                                   (minutes (/ total-seconds 60))
+                                   (seconds (% total-seconds 60)))
+                              (cons 'length (format "%d:%02d" minutes seconds))))
+                        (assoc 'disambiguation x)
+                        (car x))
 
 (defun mb-search--recording-format (item)
   "Formats ITEM into a string.
@@ -612,17 +551,11 @@ The ITEM should be an alist returned by `mb-search--recording-exact'."
   "Searches for INSTRUMENT and returns a vector."
   (mb-search--tidy #'mb-search--instrument instrument))
 
-(defun mb-search--instrument-exact (instrument)
-  "Searches for INSTRUMENT, and returns an alist of names, disambiguations and IDs."
-  (mapcar (lambda (x)
-            (append (list
-                     (assoc 'name x)
-                     (assoc 'type x)
-                     (assoc 'disambiguation x)
-                     ;; `car' is id, and it's faster than `assoc'
-                     (car x))))
-          (mb-search--instrument-tidy instrument))
-  )
+(mb-search-define-exact "instrument"
+                        (assoc 'name x)
+                        (assoc 'type x)
+                        (assoc 'disambiguation x)
+                        (car x))
 
 (defun mb-search--instrument-format (item)
   "Formats ITEM into a string.
@@ -656,17 +589,10 @@ The ITEM should be an alist returned by `mb-search--instrument-exact'."
   "Searches for LABEL and returns a vector."
   (mb-search--tidy #'mb-search--label label))
 
-(defun mb-search--label-exact (label)
-  "Searches for LABEL, and returns an alist of names, disambiguations and IDs."
-  (mapcar (lambda (x)
-            (append (list
-                     (assoc 'name x)
-                     ;; (assoc 'type x)
-                     (assoc 'disambiguation x)
-                     ;; `car' is id, and it's faster than `assoc'
-                     (car x))))
-          (mb-search--label-tidy label))
-  )
+(mb-search-define-exact "label"
+                        (assoc 'name x)
+                        (assoc 'disambiguation x)
+                        (car x))
 
 (defun mb-search--label-format (item)
   "Formats ITEM into a string.
@@ -698,17 +624,11 @@ The ITEM should be an alist returned by `mb-search--label-exact'."
   "Searches for PLACE and returns a vector."
   (mb-search--tidy #'mb-search--place place))
 
-(defun mb-search--place-exact (place)
-  "Searches for PLACE, and returns an alist of names, disambiguations and IDs."
-  (mapcar (lambda (x)
-            (append (list
-                     (assoc 'name x)
-                     (assoc 'type x)
-                     (assoc 'disambiguation x)
-                     ;; `car' is id, and it's faster than `assoc'
-                     (car x))))
-          (mb-search--place-tidy place))
-  )
+(mb-search-define-exact "place"
+                        (assoc 'name x)
+                        (assoc 'type x)
+                        (assoc 'disambiguation x)
+                        (car x))
 
 (defun mb-search--place-format (item)
   "Formats ITEM into a string.
@@ -741,15 +661,9 @@ The ITEM should be an alist returned by `mb-search--place-exact'."
   (mb-search--tidy #'mb-search--url url)
   )
 
-(defun mb-search--url-exact (url)
-  "Searches for URL, and returns an alist of names, disambiguations and IDs."
-  (mapcar (lambda (x)
-            (append (list
-                     (assoc 'resource x)
-                     ;; `car' is id, and it's faster than `assoc'
-                     (car x))))
-          (mb-search--url-tidy url))
-  )
+(mb-search-define-exact "url"
+                        (assoc 'resource x)
+                        (car x))
 
 (defun mb-search--url-format (item)
   "Formats ITEM into a string.
