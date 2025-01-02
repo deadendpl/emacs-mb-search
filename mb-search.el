@@ -4,7 +4,7 @@
 
 ;; Author:  Oliwier Czerwiński <oliwier.czerwi@proton.me>
 ;; Keywords: convenience
-;; Version: 20241228
+;; Version: 20250102
 ;; URL: https://github.com/deadendpl/emacs-mb-search
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -48,7 +48,7 @@
 (require 'url-http)
 (require 'json)
 
-(defconst mb-search-version "20241228")
+(defconst mb-search-version "20250102")
 
 (defcustom mb-search-limit 25
   "The maximum number of entries returned.
@@ -61,8 +61,7 @@ Only values between 1 and 100 (both inclusive) are allowed."
 (defvar mb-search-user-agent
   (concat "emacs-mb-search/" mb-search-version
           " (https://github.com/deadendpl/emacs-mb-search)")
-  "A User agent string for mb-search."
-  )
+  "A User agent string for mb-search.")
 
 (defun mb-search-api--url (type query)
   "Searches for QUERY of TYPE, and returns raw lisp data.
@@ -86,8 +85,7 @@ It uses curl."
       (let ((output (json-read)))
         (if (assoc 'error output)
             (error (cdr (assoc 'error output)))
-          output))))
-  )
+          output)))))
 
 (defun mb-search-api (type query)
   "Searches for QUERY of TYPE, and returns raw lisp data."
@@ -101,9 +99,7 @@ It checks for results, and errors if there are none."
   (let ((data (append (cdr (cadddr (funcall func query))) nil)))
     (if (eq (length data) 0)
         (error "No results were found.")
-      data)
-    )
-  )
+      data)))
 
 (defmacro mb-search-define-exact (type &rest args)
   "Defines a exact retrieving function.
@@ -136,13 +132,11 @@ RESULT should be id symbol in most cases."
 
 (defun mb-search--artist (artist)
   "Searches for ARTIST, and returns raw lisp data."
-  (mb-search-api "artist" artist)
-  )
+  (mb-search-api "artist" artist))
 
 (defun mb-search--artist-tidy (artist)
   "Searches for ARTIST and returns a vector."
-  (mb-search--tidy #'mb-search--artist artist)
-  )
+  (mb-search--tidy #'mb-search--artist artist))
 
 (mb-search-define-exact "artist"
                         (assoc 'name x)
@@ -162,8 +156,7 @@ The ITEM should be an alist returned by `mb-search--artist-exact'."
        (concat " ("
                (when (not (string= sort-name (cdr (assoc 'name item))))
                  (concat (propertize sort-name 'face 'italic) ", "))
-               disambiguation ")")))
-   ))
+               disambiguation ")")))))
 
 (defun mb-search--artist-select (artist)
   (mb-search-select (mb-search--artist-exact artist) #'mb-search--artist-format "Artist: " 'id))
@@ -171,8 +164,7 @@ The ITEM should be an alist returned by `mb-search--artist-exact'."
 ;;;###autoload
 (defun mb-search-artist (artist)
   (interactive "sArtist: ")
-  (mb-search-open (mb-search--artist-select artist))
-  )
+  (mb-search-open (mb-search--artist-select artist)))
 
 ;;; Release group
 
@@ -182,8 +174,7 @@ The ITEM should be an alist returned by `mb-search--artist-exact'."
 
 (defun mb-search--release-group-tidy (release-group)
   "Searches for RELEASE-GROUP and returns a vector."
-  (mb-search--tidy #'mb-search--release-group release-group)
-  )
+  (mb-search--tidy #'mb-search--release-group release-group))
 
 (mb-search-define-exact "release-group"
                         (assoc 'title x)
@@ -202,8 +193,7 @@ The ITEM should be an alist returned by `mb-search--release-group-exact'."
    (if (assoc 'primary-type item)
        (concat (cdr (assoc 'primary-type item)) " - "))
    (propertize (cdr (assoc 'title item)) 'face 'underline) " - "
-   (cdr (assoc 'artist-name item))
-   ))
+   (cdr (assoc 'artist-name item))))
 
 (defun mb-search--release-group-select (release-group)
   (mb-search-select (mb-search--release-group-exact release-group) #'mb-search--release-group-format "Releae group: " 'id))
@@ -211,20 +201,17 @@ The ITEM should be an alist returned by `mb-search--release-group-exact'."
 ;;;###autoload
 (defun mb-search-release-group (release-group)
   (interactive "sRelease group: ")
-  (mb-search-open (mb-search--release-group-select release-group))
-  )
+  (mb-search-open (mb-search--release-group-select release-group)))
 
 ;;; Work
 
 (defun mb-search--work (work)
   "Searches for WORK, and returns raw lisp data."
-  (mb-search-api "work" work)
-  )
+  (mb-search-api "work" work))
 
 (defun mb-search--work-tidy (work)
   "Searches for WORK and returns a vector."
-  (mb-search--tidy #'mb-search--work work)
-  )
+  (mb-search--tidy #'mb-search--work work))
 
 ;; (defun mb-search--work-get-composer (relation)
 ;;   "Input should be the output of
@@ -251,8 +238,7 @@ The ITEM should be an alist returned by `mb-search--work-exact'."
    (propertize (cdr (assoc 'title item)) 'face 'underline)
    ;; if there is disambiguation, add it
    (if (assoc 'disambiguation item)
-       (concat " (" (cdr (assoc 'disambiguation item)) ")"))
-   ))
+       (concat " (" (cdr (assoc 'disambiguation item)) ")"))))
 
 (defun mb-search--work-select (work)
   (mb-search-select (mb-search--work-exact work) #'mb-search--work-format "Work: " 'id))
@@ -260,8 +246,7 @@ The ITEM should be an alist returned by `mb-search--work-exact'."
 ;;;###autoload
 (defun mb-search-work (work)
   (interactive "sWork: ")
-  (mb-search-open (mb-search--work-select work))
-  )
+  (mb-search-open (mb-search--work-select work)))
 
 ;;; Release
 
@@ -288,8 +273,7 @@ The ITEM should be an alist returned by `mb-search--release-exact'."
        (concat (cdr (assoc 'date item)) " - "))
    (propertize (cdr (assoc 'title item)) 'face 'underline)
    (if (assoc 'disambiguation item)
-       (concat " (" (cdr (assoc 'disambiguation item)) ")"))
-   ))
+       (concat " (" (cdr (assoc 'disambiguation item)) ")"))))
 
 (defun mb-search--release-select (release)
   (mb-search-select (mb-search--release-exact release) #'mb-search--release-format "Release: " 'id))
@@ -297,8 +281,7 @@ The ITEM should be an alist returned by `mb-search--release-exact'."
 ;;;###autoload
 (defun mb-search-release (release)
   (interactive "sRelease: ")
-  (mb-search-open (mb-search--release-select release))
-  )
+  (mb-search-open (mb-search--release-select release)))
 
 ;;; Series
 
@@ -323,8 +306,7 @@ The ITEM should be an alist returned by `mb-search--series-exact'."
    " (" (cdr (assoc 'type item))
    (if (assoc 'disambiguation item)
        (concat ", " (cdr (assoc 'disambiguation item))))
-   ")"
-   ))
+   ")"))
 
 (defun mb-search--series-select (series)
   (mb-search-select (mb-search--series-exact series) #'mb-search--series-format "Series: " 'id))
@@ -332,8 +314,7 @@ The ITEM should be an alist returned by `mb-search--series-exact'."
 ;;;###autoload
 (defun mb-search-series (series)
   (interactive "sSeries: ")
-  (mb-search-open (mb-search--series-select series))
-  )
+  (mb-search-open (mb-search--series-select series)))
 
 ;;; Tag
 
@@ -357,8 +338,7 @@ The ITEM should be an alist returned by `mb-search--tag-exact'."
 ;;;###autoload
 (defun mb-search-tag (tag)
   (interactive "sTag: ")
-  (browse-url (concat "https://musicbrainz.org/tag/" (mb-search--tag-select tag)))
-  )
+  (browse-url (concat "https://musicbrainz.org/tag/" (mb-search--tag-select tag))))
 
 ;;; Annotation
 
@@ -381,8 +361,7 @@ The ITEM should be an alist returned by `mb-search--annotation-exact'."
   (concat
    (propertize (cdr (assoc 'text item)) 'face 'underline)
    " (" (cdr (assoc 'type item)) ": "
-   (propertize (cdr (assoc 'name item)) 'face 'italic) ")"
-   ))
+   (propertize (cdr (assoc 'name item)) 'face 'italic) ")"))
 
 (defun mb-search--annotation-select (annotation)
   (mb-search-select (mb-search--annotation-exact annotation) #'mb-search--annotation-format "Artist: " 'entity))
@@ -390,8 +369,7 @@ The ITEM should be an alist returned by `mb-search--annotation-exact'."
 ;;;###autoload
 (defun mb-search-annotation (annotation)
   (interactive "sAnnotation: ")
-  (mb-search-open (mb-search--annotation-select annotation))
-  )
+  (mb-search-open (mb-search--annotation-select annotation)))
 
 ;;; Area
 
@@ -412,8 +390,7 @@ The ITEM should be an alist returned by `mb-search--annotation-exact'."
 The ITEM should be an alist returned by `mb-search--area-exact'."
   (concat
    (propertize (cdr (assoc 'name item)) 'face 'underline)
-   " (" (cdr (assoc 'type item)) ")"
-   ))
+   " (" (cdr (assoc 'type item)) ")"))
 
 (defun mb-search--area-select (area)
   (mb-search-select (mb-search--area-exact area) #'mb-search--area-format "Area: " 'id))
@@ -421,8 +398,7 @@ The ITEM should be an alist returned by `mb-search--area-exact'."
 ;;;###autoload
 (defun mb-search-area (area)
   (interactive "sArea: ")
-  (mb-search-open (mb-search--area-select area))
-  )
+  (mb-search-open (mb-search--area-select area)))
 
 ;;; CDstub
 
@@ -444,9 +420,7 @@ The ITEM should be an alist returned by `mb-search--cdstub-exact'."
   (concat
    (propertize (cdr (assoc 'title item)) 'face 'underline)
    (if (assoc 'artist item)
-       (concat " (" (cdr (assoc 'artist item)) ")")
-     )
-   ))
+       (concat " (" (cdr (assoc 'artist item)) ")"))))
 
 (defun mb-search--cdstub-select (cdstub)
   (mb-search-select (mb-search--cdstub-exact cdstub) #'mb-search--cdstub-format "Cdstub: " 'id))
@@ -454,8 +428,7 @@ The ITEM should be an alist returned by `mb-search--cdstub-exact'."
 ;;;###autoload
 (defun mb-search-cdstub (cdstub)
   (interactive "sCDstub: ")
-  (browse-url (concat "https://musicbrainz.org/cdstub/" (mb-search--cdstub-select cdstub)))
-  )
+  (browse-url (concat "https://musicbrainz.org/cdstub/" (mb-search--cdstub-select cdstub))))
 
 ;;; Event
 
@@ -485,8 +458,7 @@ The ITEM should be an alist returned by `mb-search--event-exact'."
                (when year year)
                (when (and year disambiguation) ", ")
                (when disambiguation disambiguation)
-               ")")))
-   ))
+               ")")))))
 
 (defun mb-search--event-select (event)
   (mb-search-select (mb-search--event-exact event) #'mb-search--event-format "Event: " 'id))
@@ -494,8 +466,7 @@ The ITEM should be an alist returned by `mb-search--event-exact'."
 ;;;###autoload
 (defun mb-search-event (event)
   (interactive "sEvent: ")
-  (mb-search-open (mb-search--event-select event))
-  )
+  (mb-search-open (mb-search--event-select event)))
 
 ;;; Recording
 
@@ -537,15 +508,13 @@ The ITEM should be an alist returned by `mb-search--recording-exact'."
 ;;;###autoload
 (defun mb-search-recording (recording)
   (interactive "sRecording: ")
-  (mb-search-open (mb-search--recording-select recording))
-  )
+  (mb-search-open (mb-search--recording-select recording)))
 
 ;;; Instrument
 
 (defun mb-search--instrument (instrument)
   "Searches for INSTRUMENT, and returns raw lisp data."
-  (mb-search-api "instrument" instrument)
-  )
+  (mb-search-api "instrument" instrument))
 
 (defun mb-search--instrument-tidy (instrument)
   "Searches for INSTRUMENT and returns a vector."
@@ -566,8 +535,7 @@ The ITEM should be an alist returned by `mb-search--instrument-exact'."
    ;; if there is disambiguation, add it
    (if (assoc 'disambiguation item)
        (concat ", " (cdr (assoc 'disambiguation item))))
-   ")"
-   ))
+   ")"))
 
 (defun mb-search--instrument-select (instrument)
   (mb-search-select (mb-search--instrument-exact instrument) #'mb-search--instrument-format "Instrument: " 'id))
@@ -575,15 +543,13 @@ The ITEM should be an alist returned by `mb-search--instrument-exact'."
 ;;;###autoload
 (defun mb-search-instrument (instrument)
   (interactive "sInstrument: ")
-  (mb-search-open (mb-search--instrument-select instrument))
-  )
+  (mb-search-open (mb-search--instrument-select instrument)))
 
 ;;; Label
 
 (defun mb-search--label (label)
   "Searches for LABEL, and returns raw lisp data."
-  (mb-search-api "label" label)
-  )
+  (mb-search-api "label" label))
 
 (defun mb-search--label-tidy (label)
   "Searches for LABEL and returns a vector."
@@ -610,15 +576,13 @@ The ITEM should be an alist returned by `mb-search--label-exact'."
 ;;;###autoload
 (defun mb-search-label (label)
   (interactive "sLabel: ")
-  (mb-search-open (mb-search--label-select label))
-  )
+  (mb-search-open (mb-search--label-select label)))
 
 ;;; Place
 
 (defun mb-search--place (place)
   "Searches for PLACE, and returns raw lisp data."
-  (mb-search-api "place" place)
-  )
+  (mb-search-api "place" place))
 
 (defun mb-search--place-tidy (place)
   "Searches for PLACE and returns a vector."
@@ -636,9 +600,7 @@ The ITEM should be an alist returned by `mb-search--place-exact'."
   (concat
    (propertize (cdr (assoc 'name item)) 'face 'underline)
    (if (assoc 'type item)
-       (concat " (" (cdr (assoc 'type item)) ")")
-     )
-   ))
+       (concat " (" (cdr (assoc 'type item)) ")"))))
 
 (defun mb-search--place-select (place)
   (mb-search-select (mb-search--place-exact place) #'mb-search--place-format "Place: " 'id))
@@ -646,20 +608,17 @@ The ITEM should be an alist returned by `mb-search--place-exact'."
 ;;;###autoload
 (defun mb-search-place (place)
   (interactive "sPlace: ")
-  (mb-search-open (mb-search--place-select place))
-  )
+  (mb-search-open (mb-search--place-select place)))
 
 ;;; Url
 
 (defun mb-search--url (url)
   "Searches for URL, and returns raw lisp data."
-  (mb-search-api "url" url)
-  )
+  (mb-search-api "url" url))
 
 (defun mb-search--url-tidy (url)
   "Searches for URL and returns a vector."
-  (mb-search--tidy #'mb-search--url url)
-  )
+  (mb-search--tidy #'mb-search--url url))
 
 (mb-search-define-exact "url"
                         (assoc 'resource x)
@@ -668,8 +627,7 @@ The ITEM should be an alist returned by `mb-search--place-exact'."
 (defun mb-search--url-format (item)
   "Formats ITEM into a string.
 The ITEM should be an alist returned by `mb-search--url-exact'."
-  (propertize (cdr (assoc 'resource item)) 'face 'underline)
-  )
+  (propertize (cdr (assoc 'resource item)) 'face 'underline))
 
 (defun mb-search--url-select (url)
   (mb-search-select (mb-search--url-exact url) #'mb-search--url-format "Url: " 'id))
@@ -677,8 +635,7 @@ The ITEM should be an alist returned by `mb-search--url-exact'."
 ;;;###autoload
 (defun mb-search-url (url)
   (interactive "sURL: ")
-  (mb-search-open (mb-search--url-select url))
-  )
+  (mb-search-open (mb-search--url-select url)))
 
 (provide 'mb-search)
 ;;; mb-search.el ends here
