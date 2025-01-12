@@ -3,8 +3,8 @@
 ;; Copyright (C) 2024
 
 ;; Author:  Oliwier Czerwiński <oliwier.czerwi@proton.me>
-;; Keywords: convenience
-;; Version: 20250102
+;; Keywords: convenience, music
+;; Version: 20250112
 ;; URL: https://github.com/deadendpl/emacs-mb-search
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -48,7 +48,7 @@
 (require 'url-http)
 (require 'json)
 
-(defconst mb-search-version "20250102")
+(defconst mb-search-version "20250112")
 
 (defcustom mb-search-limit 25
   "The maximum number of entries returned.
@@ -68,7 +68,9 @@ Only values between 1 and 100 (both inclusive) are allowed."
 It uses built-in url package."
   (with-current-buffer
       (let ((url-request-extra-headers `(("User-Agent" . ,mb-search-user-agent))))
-        (url-retrieve-synchronously (format "https://musicbrainz.org/ws/2/%s?query=%s&fmt=json&limit=%s" type query mb-search-limit)))
+        (url-retrieve-synchronously
+         (format "https://musicbrainz.org/ws/2/%s?query=%s&fmt=json&limit=%s"
+                 type query mb-search-limit)))
     (goto-char url-http-end-of-headers)
     (let ((output (json-read)))
       (if (assoc 'error output)
@@ -80,7 +82,11 @@ It uses built-in url package."
 It uses curl."
   (let ((query (url-hexify-string query)))
     (with-temp-buffer
-      (call-process "curl" nil t nil "-s" "-A" mb-search-user-agent (format "https://musicbrainz.org/ws/2/%s?query=%s&fmt=json&limit=%s" type query mb-search-limit))
+      (call-process
+       "curl" nil t nil "-s" "-A" mb-search-user-agent
+       (format
+        "https://musicbrainz.org/ws/2/%s?query=%s&fmt=json&limit=%s"
+        type query mb-search-limit))
       (goto-char (point-min))
       (let ((output (json-read)))
         (if (assoc 'error output)
@@ -104,7 +110,8 @@ It checks for results, and errors if there are none."
 (defmacro mb-search-define-exact (type &rest args)
   "Defines a exact retrieving function.
 TYPE is a string of entity type.
-ARGS are expressions used to retrieve info from car of tidy function."
+ARGS are expressions used to retrieve info from element of tidy
+function's output."
   `(defun ,(intern (format "mb-search--%s-exact" type)) (artist)
      (mapcar (lambda (x)
                (append (list ,@args)))
@@ -152,11 +159,17 @@ The ITEM should be an alist returned by `mb-search--artist-exact'."
    (propertize (cdr (assoc 'name item)) 'face 'underline)
    (let ((disambiguation (cdr (assoc 'disambiguation item)))
          (sort-name (cdr (assoc 'sort-name item))))
-     (when disambiguation
-       (concat " ("
-               (when (not (string= sort-name (cdr (assoc 'name item))))
-                 (concat (propertize sort-name 'face 'italic) ", "))
-               disambiguation ")")))))
+     (cond
+      ((and disambiguation sort-name)
+       (if (not (string= sort-name (cdr (assoc 'name item))))
+           (concat " (" (propertize sort-name 'face 'italic) ", "
+                   disambiguation ")")
+         (concat " (" disambiguation ")")))
+      (sort-name
+       (unless (string= sort-name (cdr (assoc 'name item)))
+         (concat " (" (propertize sort-name 'face 'italic) ")")))
+      (disambiguation
+       (concat " (" disambiguation ")"))))))
 
 (defun mb-search--artist-select (artist)
   (mb-search-select (mb-search--artist-exact artist) #'mb-search--artist-format "Artist: " 'id))
