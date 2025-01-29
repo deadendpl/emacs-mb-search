@@ -4,7 +4,7 @@
 
 ;; Author:  Oliwier Czerwiński <oliwier.czerwi@proton.me>
 ;; Keywords: convenience, music
-;; Version: 20250112
+;; Version: 20250129
 ;; URL: https://github.com/deadendpl/emacs-mb-search
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -48,7 +48,7 @@
 (require 'url-http)
 (require 'json)
 
-(defconst mb-search-version "20250112")
+(defconst mb-search-version "20250129")
 
 (defcustom mb-search-limit 25
   "The maximum number of entries returned.
@@ -64,7 +64,7 @@ Only values between 1 and 100 (both inclusive) are allowed."
   "A User agent string for mb-search.")
 
 (defun mb-search-api--url (type query)
-  "Searches for QUERY of TYPE, and returns raw lisp data.
+  "Search for QUERY of TYPE, and return raw Lisp data.
 It uses built-in url package."
   (with-current-buffer
       (let ((url-request-extra-headers `(("User-Agent" . ,mb-search-user-agent))))
@@ -78,7 +78,7 @@ It uses built-in url package."
         output))))
 
 (defun mb-search-api--curl (type query)
-  "Searches for QUERY of TYPE, and returns raw lisp data.
+  "Search for QUERY of TYPE, and return raw Lisp data.
 It uses curl."
   (let ((query (url-hexify-string query)))
     (with-temp-buffer
@@ -94,21 +94,22 @@ It uses curl."
           output)))))
 
 (defun mb-search-api (type query)
-  "Searches for QUERY of TYPE, and returns raw lisp data."
+  "Search for QUERY of TYPE, and return raw Lisp data."
   (if mb-search-curl-p
       (mb-search-api--curl type query)
     (mb-search-api--url type query)))
 
 (defun mb-search--tidy (func query)
-  "Returns a data ready to be used.
-It checks for results, and errors if there are none."
+  "Return a data ready to be used.
+It checks for results, and errors if there are none.
+Applies QUERY to FUNC which should be mb-search--[type]."
   (let ((data (append (cdr (cadddr (funcall func query))) nil)))
     (if (eq (length data) 0)
-        (error "No results were found.")
+        (error "No results were found")
       data)))
 
 (defmacro mb-search-define-exact (type &rest args)
-  "Defines a exact retrieving function.
+  "Define a exact retrieving function.
 TYPE is a string of entity type.
 ARGS are expressions used to retrieve info from element of tidy
 function's output."
@@ -118,11 +119,11 @@ function's output."
              (,(intern (format "mb-search--%s-tidy" type)) artist))))
 
 (defun mb-search-select (data format-func prompt result)
-  "Prompt the user to select a name from the list DATA and return the
-corresponding ID. The DATA should be the output of exact searching
+  "Select a name from the list DATA and return the corresponding ID.
+The DATA should be the output of exact searching
 function like `mb-search--artist-exact'.
 FORMAT-FUNC is the formatting function.
-PROMPT is a string that's used as comepletion prompt.
+PROMPT is a string that's used as completion prompt.
 RESULT should be id symbol in most cases."
   (let* ((name-list (mapcar format-func data))
          (selected-name (completing-read prompt name-list nil t)))
@@ -132,17 +133,17 @@ RESULT should be id symbol in most cases."
                         data)))))
 
 (defun mb-search-open (mbid)
-  "Opens MBID in a MusicBrainz website."
+  "Open MBID in a MusicBrainz website."
   (browse-url (concat "https://musicbrainz.org/mbid/" mbid)))
 
 ;;; Artist
 
 (defun mb-search--artist (artist)
-  "Searches for ARTIST, and returns raw lisp data."
+  "Search for ARTIST, and return raw Lisp data."
   (mb-search-api "artist" artist))
 
 (defun mb-search--artist-tidy (artist)
-  "Searches for ARTIST and returns a vector."
+  "Search for ARTIST and return a vector."
   (mb-search--tidy #'mb-search--artist artist))
 
 (mb-search-define-exact "artist"
@@ -153,7 +154,7 @@ RESULT should be id symbol in most cases."
                         (car x))
 
 (defun mb-search--artist-format (item)
-  "Formats ITEM into a string.
+  "Format ITEM into a string.
 The ITEM should be an alist returned by `mb-search--artist-exact'."
   (concat
    (propertize (cdr (assoc 'name item)) 'face 'underline)
@@ -182,11 +183,11 @@ The ITEM should be an alist returned by `mb-search--artist-exact'."
 ;;; Release group
 
 (defun mb-search--release-group (release-group)
-  "Searches for a RELEASE-GROUP, and returns raw lisp data."
+  "Search for a RELEASE-GROUP, and return raw Lisp data."
   (mb-search-api "release-group" release-group))
 
 (defun mb-search--release-group-tidy (release-group)
-  "Searches for RELEASE-GROUP and returns a vector."
+  "Search for RELEASE-GROUP and return a vector."
   (mb-search--tidy #'mb-search--release-group release-group))
 
 (mb-search-define-exact "release-group"
@@ -198,7 +199,7 @@ The ITEM should be an alist returned by `mb-search--artist-exact'."
                                                                 'artist-credit x)) nil))))
 
 (defun mb-search--release-group-format (item)
-  "Formats ITEM into a string.
+  "Format ITEM into a string.
 The ITEM should be an alist returned by `mb-search--release-group-exact'."
   (concat
    (if (assoc 'first-release-date item)
@@ -219,11 +220,11 @@ The ITEM should be an alist returned by `mb-search--release-group-exact'."
 ;;; Work
 
 (defun mb-search--work (work)
-  "Searches for WORK, and returns raw lisp data."
+  "Search for WORK, and return raw Lisp data."
   (mb-search-api "work" work))
 
 (defun mb-search--work-tidy (work)
-  "Searches for WORK and returns a vector."
+  "Search for WORK and return a vector."
   (mb-search--tidy #'mb-search--work work))
 
 ;; (defun mb-search--work-get-composer (relation)
@@ -245,7 +246,7 @@ The ITEM should be an alist returned by `mb-search--release-group-exact'."
                         (car x))
 
 (defun mb-search--work-format (item)
-  "Formats ITEM into a string.
+  "Format ITEM into a string.
 The ITEM should be an alist returned by `mb-search--work-exact'."
   (concat
    (propertize (cdr (assoc 'title item)) 'face 'underline)
@@ -267,7 +268,7 @@ The ITEM should be an alist returned by `mb-search--work-exact'."
   (mb-search-api "release" release))
 
 (defun mb-search--release-tidy (release)
-  "Searches for RELEASE and returns a vector."
+  "Search for RELEASE and return a vector."
   (mb-search--tidy #'mb-search--release release))
 
 (mb-search-define-exact "release"
@@ -277,7 +278,7 @@ The ITEM should be an alist returned by `mb-search--work-exact'."
                         (car x))
 
 (defun mb-search--release-format (item)
-  "Formats ITEM into a string.
+  "Format ITEM into a string.
 The ITEM should be an alist returned by `mb-search--release-exact'."
   (concat
    (if (and (assoc 'date item)
@@ -302,7 +303,7 @@ The ITEM should be an alist returned by `mb-search--release-exact'."
   (mb-search-api "series" series))
 
 (defun mb-search--series-tidy (series)
-  "Searches for SERIES and returns a vector."
+  "Search for SERIES and return a vector."
   (mb-search--tidy #'mb-search--series series))
 
 (mb-search-define-exact "series"
@@ -312,7 +313,7 @@ The ITEM should be an alist returned by `mb-search--release-exact'."
                         (car x))
 
 (defun mb-search--series-format (item)
-  "Formats ITEM into a string.
+  "Format ITEM into a string.
 The ITEM should be an alist returned by `mb-search--series-exact'."
   (concat
    (cdr (assoc 'name item))
@@ -335,13 +336,13 @@ The ITEM should be an alist returned by `mb-search--series-exact'."
   (mb-search-api "tag" tag))
 
 (defun mb-search--tag-tidy (tag)
-  "Searches for TAG and returns a vector."
+  "Search for TAG and return a vector."
   (mb-search--tidy #'mb-search--tag tag))
 
 (mb-search-define-exact "tag" (append (cdr (assoc 'name x))))
 
 (defun mb-search--tag-format (item)
-  "Formats ITEM into a string.
+  "Format ITEM into a string.
 The ITEM should be an alist returned by `mb-search--tag-exact'."
   (propertize item 'face 'underline))
 
@@ -359,7 +360,7 @@ The ITEM should be an alist returned by `mb-search--tag-exact'."
   (mb-search-api "annotation" annotation))
 
 (defun mb-search--annotation-tidy (annotation)
-  "Searches for ANNOTATION and returns a vector."
+  "Search for ANNOTATION and return a vector."
   (mb-search--tidy #'mb-search--annotation annotation))
 
 (mb-search-define-exact "annotation"
@@ -369,7 +370,7 @@ The ITEM should be an alist returned by `mb-search--tag-exact'."
                         (assoc 'entity x))
 
 (defun mb-search--annotation-format (item)
-  "Formats ITEM into a string.
+  "Format ITEM into a string.
 The ITEM should be an alist returned by `mb-search--annotation-exact'."
   (concat
    (propertize (cdr (assoc 'text item)) 'face 'underline)
@@ -390,7 +391,7 @@ The ITEM should be an alist returned by `mb-search--annotation-exact'."
   (mb-search-api "area" area))
 
 (defun mb-search--area-tidy (area)
-  "Searches for AREA and returns a vector."
+  "Search for AREA and return a vector."
   (mb-search--tidy #'mb-search--area area))
 
 (mb-search-define-exact "area"
@@ -399,7 +400,7 @@ The ITEM should be an alist returned by `mb-search--annotation-exact'."
                         (car x))
 
 (defun mb-search--area-format (item)
-  "Formats ITEM into a string.
+  "Format ITEM into a string.
 The ITEM should be an alist returned by `mb-search--area-exact'."
   (concat
    (propertize (cdr (assoc 'name item)) 'face 'underline)
@@ -419,7 +420,7 @@ The ITEM should be an alist returned by `mb-search--area-exact'."
   (mb-search-api "cdstub" cdstub))
 
 (defun mb-search--cdstub-tidy (cdstub)
-  "Searches for CDSTUB and returns a vector."
+  "Search for CDSTUB and return a vector."
   (mb-search--tidy #'mb-search--cdstub cdstub))
 
 (mb-search-define-exact "cdstub"
@@ -428,7 +429,7 @@ The ITEM should be an alist returned by `mb-search--area-exact'."
                         (car x))
 
 (defun mb-search--cdstub-format (item)
-  "Formats ITEM into a string.
+  "Format ITEM into a string.
 The ITEM should be an alist returned by `mb-search--cdstub-exact'."
   (concat
    (propertize (cdr (assoc 'title item)) 'face 'underline)
@@ -449,7 +450,7 @@ The ITEM should be an alist returned by `mb-search--cdstub-exact'."
   (mb-search-api "event" event))
 
 (defun mb-search--event-tidy (event)
-  "Searches for EVENT and returns a vector."
+  "Search for EVENT and return a vector."
   (mb-search--tidy #'mb-search--event event))
 
 (mb-search-define-exact "event"
@@ -460,7 +461,7 @@ The ITEM should be an alist returned by `mb-search--cdstub-exact'."
                         (car x))
 
 (defun mb-search--event-format (item)
-  "Formats ITEM into a string.
+  "Format ITEM into a string.
 The ITEM should be an alist returned by `mb-search--event-exact'."
   (concat
    (propertize (cdr (assoc 'name item)) 'face 'underline)
@@ -487,7 +488,7 @@ The ITEM should be an alist returned by `mb-search--event-exact'."
   (mb-search-api "recording" recording))
 
 (defun mb-search--recording-tidy (recording)
-  "Searches for RECORDING and returns a vector."
+  "Search for RECORDING and return a vector."
   (mb-search--tidy #'mb-search--recording recording))
 
 (mb-search-define-exact "recording"
@@ -502,7 +503,7 @@ The ITEM should be an alist returned by `mb-search--event-exact'."
                         (car x))
 
 (defun mb-search--recording-format (item)
-  "Formats ITEM into a string.
+  "Format ITEM into a string.
 The ITEM should be an alist returned by `mb-search--recording-exact'."
   (concat
    (propertize (cdr (assoc 'title item)) 'face 'underline)
@@ -526,11 +527,11 @@ The ITEM should be an alist returned by `mb-search--recording-exact'."
 ;;; Instrument
 
 (defun mb-search--instrument (instrument)
-  "Searches for INSTRUMENT, and returns raw lisp data."
+  "Search for INSTRUMENT, and return raw Lisp data."
   (mb-search-api "instrument" instrument))
 
 (defun mb-search--instrument-tidy (instrument)
-  "Searches for INSTRUMENT and returns a vector."
+  "Search for INSTRUMENT and return a vector."
   (mb-search--tidy #'mb-search--instrument instrument))
 
 (mb-search-define-exact "instrument"
@@ -540,7 +541,7 @@ The ITEM should be an alist returned by `mb-search--recording-exact'."
                         (car x))
 
 (defun mb-search--instrument-format (item)
-  "Formats ITEM into a string.
+  "Format ITEM into a string.
 The ITEM should be an alist returned by `mb-search--instrument-exact'."
   (concat
    (propertize (cdr (assoc 'name item)) 'face 'underline)
@@ -561,11 +562,11 @@ The ITEM should be an alist returned by `mb-search--instrument-exact'."
 ;;; Label
 
 (defun mb-search--label (label)
-  "Searches for LABEL, and returns raw lisp data."
+  "Search for LABEL, and return raw Lisp data."
   (mb-search-api "label" label))
 
 (defun mb-search--label-tidy (label)
-  "Searches for LABEL and returns a vector."
+  "Search for LABEL and return a vector."
   (mb-search--tidy #'mb-search--label label))
 
 (mb-search-define-exact "label"
@@ -574,7 +575,7 @@ The ITEM should be an alist returned by `mb-search--instrument-exact'."
                         (car x))
 
 (defun mb-search--label-format (item)
-  "Formats ITEM into a string.
+  "Format ITEM into a string.
 The ITEM should be an alist returned by `mb-search--label-exact'."
   (concat
    (propertize (cdr (assoc 'name item)) 'face 'underline)
@@ -594,11 +595,11 @@ The ITEM should be an alist returned by `mb-search--label-exact'."
 ;;; Place
 
 (defun mb-search--place (place)
-  "Searches for PLACE, and returns raw lisp data."
+  "Search for PLACE, and return raw Lisp data."
   (mb-search-api "place" place))
 
 (defun mb-search--place-tidy (place)
-  "Searches for PLACE and returns a vector."
+  "Search for PLACE and return a vector."
   (mb-search--tidy #'mb-search--place place))
 
 (mb-search-define-exact "place"
@@ -608,7 +609,7 @@ The ITEM should be an alist returned by `mb-search--label-exact'."
                         (car x))
 
 (defun mb-search--place-format (item)
-  "Formats ITEM into a string.
+  "Format ITEM into a string.
 The ITEM should be an alist returned by `mb-search--place-exact'."
   (concat
    (propertize (cdr (assoc 'name item)) 'face 'underline)
@@ -623,14 +624,14 @@ The ITEM should be an alist returned by `mb-search--place-exact'."
   (interactive "sPlace: ")
   (mb-search-open (mb-search--place-select place)))
 
-;;; Url
+;;; URL
 
 (defun mb-search--url (url)
-  "Searches for URL, and returns raw lisp data."
+  "Search for URL, and return raw Lisp data."
   (mb-search-api "url" url))
 
 (defun mb-search--url-tidy (url)
-  "Searches for URL and returns a vector."
+  "Search for URL and return a vector."
   (mb-search--tidy #'mb-search--url url))
 
 (mb-search-define-exact "url"
@@ -638,12 +639,12 @@ The ITEM should be an alist returned by `mb-search--place-exact'."
                         (car x))
 
 (defun mb-search--url-format (item)
-  "Formats ITEM into a string.
+  "Format ITEM into a string.
 The ITEM should be an alist returned by `mb-search--url-exact'."
   (propertize (cdr (assoc 'resource item)) 'face 'underline))
 
 (defun mb-search--url-select (url)
-  (mb-search-select (mb-search--url-exact url) #'mb-search--url-format "Url: " 'id))
+  (mb-search-select (mb-search--url-exact url) #'mb-search--url-format "URL: " 'id))
 
 ;;;###autoload
 (defun mb-search-url (url)
