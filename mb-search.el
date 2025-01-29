@@ -118,6 +118,17 @@ function's output."
                (append (list ,@args)))
              (,(intern (format "mb-search--%s-tidy" type)) artist))))
 
+(defun mb-search-get-artists (artists)
+  "Return a artist string.
+ARTISTS is entity's artist-credit item."
+  (let ((string))
+    (seq-map (lambda (item)
+               (setq string (concat string
+                                    (concat (cdr (assoc 'name item))
+                                            (cdr (assoc 'joinphrase item))))))
+             artists)
+    string))
+
 (defun mb-search-select (data format-func prompt result)
   "Select a name from the list DATA and return the corresponding ID.
 The DATA should be the output of exact searching
@@ -194,9 +205,8 @@ The ITEM should be an alist returned by `mb-search--artist-exact'."
                         (assoc 'title x)
                         (assoc 'primary-type x)
                         (assoc 'first-release-date x)
-                        (car x) ; id
-                        (cons 'artist-name (cdaar (append (cdr (assoc
-                                                                'artist-credit x)) nil))))
+                        (assoc 'artist-credit x)
+                        (car x)) ; id
 
 (defun mb-search--release-group-format (item)
   "Format ITEM into a string.
@@ -207,7 +217,8 @@ The ITEM should be an alist returned by `mb-search--release-group-exact'."
    (if (assoc 'primary-type item)
        (concat (cdr (assoc 'primary-type item)) " - "))
    (propertize (cdr (assoc 'title item)) 'face 'underline) " - "
-   (cdr (assoc 'artist-name item))))
+   (mb-search-get-artists
+    (append (cdr (assoc 'artist-credit item)) nil))))
 
 (defun mb-search--release-group-select (release-group)
   (mb-search-select (mb-search--release-group-exact release-group) #'mb-search--release-group-format "Releae group: " 'id))
@@ -275,6 +286,7 @@ The ITEM should be an alist returned by `mb-search--work-exact'."
                         (assoc 'title x)
                         (assoc 'date x)
                         (assoc 'disambiguation x)
+                        (assoc 'artist-credit x)
                         (car x))
 
 (defun mb-search--release-format (item)
@@ -287,7 +299,9 @@ The ITEM should be an alist returned by `mb-search--release-exact'."
        (concat (cdr (assoc 'date item)) " - "))
    (propertize (cdr (assoc 'title item)) 'face 'underline)
    (if (assoc 'disambiguation item)
-       (concat " (" (cdr (assoc 'disambiguation item)) ")"))))
+       (concat " (" (cdr (assoc 'disambiguation item)) ")"))
+   " - " (mb-search-get-artists
+          (append (cdr (assoc 'artist-credit item)) nil))))
 
 (defun mb-search--release-select (release)
   (mb-search-select (mb-search--release-exact release) #'mb-search--release-format "Release: " 'id))
@@ -500,6 +514,7 @@ The ITEM should be an alist returned by `mb-search--event-exact'."
                                    (seconds (% total-seconds 60)))
                               (cons 'length (format "%d:%02d" minutes seconds))))
                         (assoc 'disambiguation x)
+                        (assoc 'artist-credit x)
                         (car x))
 
 (defun mb-search--recording-format (item)
@@ -514,7 +529,9 @@ The ITEM should be an alist returned by `mb-search--recording-exact'."
                (when length length)
                (when (and length disambiguation) ", ")
                (when disambiguation disambiguation)
-               ")")))))
+               ")")))
+   " - " (mb-search-get-artists
+          (append (cdr (assoc 'artist-credit item)) nil))))
 
 (defun mb-search--recording-select (recording)
   (mb-search-select (mb-search--recording-exact recording) #'mb-search--recording-format "Recording: " 'id))
