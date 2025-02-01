@@ -4,7 +4,7 @@
 
 ;; Author:  Oliwier Czerwiński <oliwier.czerwi@proton.me>
 ;; Keywords: convenience, music
-;; Version: 20250129
+;; Version: 20250201
 ;; URL: https://github.com/deadendpl/emacs-mb-search
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -48,7 +48,7 @@
 (require 'url-http)
 (require 'json)
 
-(defconst mb-search-version "20250129")
+(defconst mb-search-version "20250201")
 
 (defcustom mb-search-limit 25
   "The maximum number of entries returned.
@@ -110,13 +110,13 @@ Applies QUERY to FUNC which should be mb-search--[type]."
 
 (defmacro mb-search-define-exact (type &rest args)
   "Define a exact retrieving function.
-TYPE is a string of entity type.
+TYPE is a unquoted symbol of entity type.
 ARGS are expressions used to retrieve info from element of tidy
 function's output."
-  `(defun ,(intern (format "mb-search--%s-exact" type)) (artist)
+  `(defun ,(intern (format "mb-search--%s-exact" type)) (,type)
      (mapcar (lambda (x)
                (append (list ,@args)))
-             (,(intern (format "mb-search--%s-tidy" type)) artist))))
+             (,(intern (format "mb-search--%s-tidy" type)) ,type))))
 
 (defun mb-search-get-artists (artists)
   "Return a artist string.
@@ -157,7 +157,7 @@ RESULT should be id symbol in most cases."
   "Search for ARTIST and return a vector."
   (mb-search--tidy #'mb-search--artist artist))
 
-(mb-search-define-exact "artist"
+(mb-search-define-exact artist
                         (assoc 'name x)
                         (assoc 'sort-name x)
                         (assoc 'disambiguation x)
@@ -201,7 +201,7 @@ The ITEM should be an alist returned by `mb-search--artist-exact'."
   "Search for RELEASE-GROUP and return a vector."
   (mb-search--tidy #'mb-search--release-group release-group))
 
-(mb-search-define-exact "release-group"
+(mb-search-define-exact release-group
                         (assoc 'title x)
                         (assoc 'primary-type x)
                         (assoc 'first-release-date x)
@@ -251,7 +251,7 @@ The ITEM should be an alist returned by `mb-search--release-group-exact'."
 ;;     "")
 ;;   )
 
-(mb-search-define-exact "work"
+(mb-search-define-exact work
                         (assoc 'title x)
                         (assoc 'disambiguation x)
                         (car x))
@@ -282,7 +282,7 @@ The ITEM should be an alist returned by `mb-search--work-exact'."
   "Search for RELEASE and return a vector."
   (mb-search--tidy #'mb-search--release release))
 
-(mb-search-define-exact "release"
+(mb-search-define-exact release
                         (assoc 'title x)
                         (assoc 'date x)
                         (assoc 'disambiguation x)
@@ -320,7 +320,7 @@ The ITEM should be an alist returned by `mb-search--release-exact'."
   "Search for SERIES and return a vector."
   (mb-search--tidy #'mb-search--series series))
 
-(mb-search-define-exact "series"
+(mb-search-define-exact series
                         (assoc 'name x)
                         (assoc 'type x)
                         (assoc 'disambiguation x)
@@ -353,7 +353,7 @@ The ITEM should be an alist returned by `mb-search--series-exact'."
   "Search for TAG and return a vector."
   (mb-search--tidy #'mb-search--tag tag))
 
-(mb-search-define-exact "tag" (append (cdr (assoc 'name x))))
+(mb-search-define-exact tag (append (cdr (assoc 'name x))))
 
 (defun mb-search--tag-format (item)
   "Format ITEM into a string.
@@ -377,7 +377,7 @@ The ITEM should be an alist returned by `mb-search--tag-exact'."
   "Search for ANNOTATION and return a vector."
   (mb-search--tidy #'mb-search--annotation annotation))
 
-(mb-search-define-exact "annotation"
+(mb-search-define-exact annotation
                         (assoc 'text x)
                         (assoc 'type x)
                         (assoc 'name x)
@@ -408,7 +408,7 @@ The ITEM should be an alist returned by `mb-search--annotation-exact'."
   "Search for AREA and return a vector."
   (mb-search--tidy #'mb-search--area area))
 
-(mb-search-define-exact "area"
+(mb-search-define-exact area
                         (assoc 'name x)
                         (assoc 'type x)
                         (car x))
@@ -437,7 +437,7 @@ The ITEM should be an alist returned by `mb-search--area-exact'."
   "Search for CDSTUB and return a vector."
   (mb-search--tidy #'mb-search--cdstub cdstub))
 
-(mb-search-define-exact "cdstub"
+(mb-search-define-exact cdstub
                         (assoc 'title x)
                         (assoc 'artist x)
                         (car x))
@@ -467,7 +467,7 @@ The ITEM should be an alist returned by `mb-search--cdstub-exact'."
   "Search for EVENT and return a vector."
   (mb-search--tidy #'mb-search--event event))
 
-(mb-search-define-exact "event"
+(mb-search-define-exact event
                         (assoc 'name x)
                         (assoc 'type x)
                         (assoc 'disambiguation x)
@@ -505,7 +505,7 @@ The ITEM should be an alist returned by `mb-search--event-exact'."
   "Search for RECORDING and return a vector."
   (mb-search--tidy #'mb-search--recording recording))
 
-(mb-search-define-exact "recording"
+(mb-search-define-exact recording
                         (assoc 'title x)
                         ;; calculating time as it's in ms
                         (if (assoc 'length x)
@@ -551,7 +551,7 @@ The ITEM should be an alist returned by `mb-search--recording-exact'."
   "Search for INSTRUMENT and return a vector."
   (mb-search--tidy #'mb-search--instrument instrument))
 
-(mb-search-define-exact "instrument"
+(mb-search-define-exact instrument
                         (assoc 'name x)
                         (assoc 'type x)
                         (assoc 'disambiguation x)
@@ -586,7 +586,7 @@ The ITEM should be an alist returned by `mb-search--instrument-exact'."
   "Search for LABEL and return a vector."
   (mb-search--tidy #'mb-search--label label))
 
-(mb-search-define-exact "label"
+(mb-search-define-exact label
                         (assoc 'name x)
                         (assoc 'disambiguation x)
                         (car x))
@@ -619,7 +619,7 @@ The ITEM should be an alist returned by `mb-search--label-exact'."
   "Search for PLACE and return a vector."
   (mb-search--tidy #'mb-search--place place))
 
-(mb-search-define-exact "place"
+(mb-search-define-exact place
                         (assoc 'name x)
                         (assoc 'type x)
                         (assoc 'disambiguation x)
@@ -651,7 +651,7 @@ The ITEM should be an alist returned by `mb-search--place-exact'."
   "Search for URL and return a vector."
   (mb-search--tidy #'mb-search--url url))
 
-(mb-search-define-exact "url"
+(mb-search-define-exact url
                         (assoc 'resource x)
                         (car x))
 
