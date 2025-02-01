@@ -145,6 +145,7 @@ RESULT should be id symbol in most cases."
 
 (defun mb-search-open (mbid)
   "Open MBID in a MusicBrainz website."
+  (interactive "sMBID: ")
   (browse-url (concat "https://musicbrainz.org/mbid/" mbid)))
 
 ;;; Artist
