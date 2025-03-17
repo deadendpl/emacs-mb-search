@@ -118,6 +118,16 @@ function's output."
                (append (list ,@args)))
              (,(intern (format "mb-search--%s-tidy" type)) ,type))))
 
+(defun mb-search-get-primary-alias (item)
+  "Get a primary alias from ITEM.
+ITEM should be a element from a list returned by `mb-search--tidy'."
+  (car
+   (mapcar (lambda (item) (cdr (assoc 'name item)))
+           (seq-filter (lambda (item)
+                         (and (string= (cdr (assoc 'locale item)) "en")
+                              (eq (cdr (assoc 'primary item)) t)))
+                       (append (cdr (assoc 'aliases item)) nil)))))
+
 (defun mb-search-get-artists (artists)
   "Return a artist string.
 ARTISTS is entity's artist-credit item."
@@ -256,6 +266,8 @@ The ITEM should be an alist returned by `mb-search--release-group-exact'."
 (mb-search-define-exact work
                         (assoc 'title x)
                         (assoc 'disambiguation x)
+                        (if-let ((alias (mb-search-get-primary-alias x)))
+                            (cons 'alias alias))
                         (car x))
 
 (defun mb-search--work-format (item)
@@ -264,8 +276,16 @@ The ITEM should be an alist returned by `mb-search--work-exact'."
   (concat
    (propertize (cdr (assoc 'title item)) 'face 'underline)
    ;; if there is disambiguation, add it
-   (if (assoc 'disambiguation item)
-       (concat " (" (cdr (assoc 'disambiguation item)) ")"))))
+   (let ((disambiguation (cdr (assoc 'disambiguation item)))
+         (alias (cdr (assoc 'alias item))))
+     (cond
+      ((and disambiguation alias)
+       (concat " (" (propertize alias 'face 'italic)
+               ", " disambiguation ")"))
+      (alias
+       (concat " (" (propertize alias 'face 'italic) ")"))
+      (disambiguation
+       (concat " (" disambiguation ")"))))))
 
 (defun mb-search--work-select (work)
   (mb-search-select (mb-search--work-exact work) #'mb-search--work-format "Work: " 'id))
