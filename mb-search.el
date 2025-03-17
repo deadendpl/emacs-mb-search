@@ -4,7 +4,7 @@
 
 ;; Author:  Oliwier Czerwiński <oliwier.czerwi@proton.me>
 ;; Keywords: convenience, music
-;; Version: 20250201
+;; Version: 20250317
 ;; URL: https://github.com/deadendpl/emacs-mb-search
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -26,7 +26,7 @@
 
 ;; It uses built-in `completing-read' to choose candidates.
 
-;; It will use curl by default for doing API requests, because using
+;; It will use cURL by default for doing API requests, because using
 ;; built-in url library resulted in characters not rendering correctly.
 ;; If you still want to use url library for API requests, you can change
 ;; the value of `mb-search-curl-p' to nil.
@@ -48,7 +48,7 @@
 (require 'url-http)
 (require 'json)
 
-(defconst mb-search-version "20250201")
+(defconst mb-search-version "20250317")
 
 (defcustom mb-search-limit 25
   "The maximum number of entries returned.
@@ -56,7 +56,7 @@ Only values between 1 and 100 (both inclusive) are allowed."
   :type 'integer)
 
 (defvar mb-search-curl-p (executable-find "curl")
-  "Non-nil means curl is in path.")
+  "Non-nil means cURL is in path.")
 
 (defvar mb-search-user-agent
   (concat "emacs-mb-search/" mb-search-version
@@ -79,7 +79,7 @@ It uses built-in url package."
 
 (defun mb-search-api--curl (type query)
   "Search for QUERY of TYPE, and return raw Lisp data.
-It uses curl."
+It uses cURL."
   (let ((query (url-hexify-string query)))
     (with-temp-buffer
       (call-process
@@ -143,6 +143,7 @@ RESULT should be id symbol in most cases."
                           (string= (funcall format-func item) selected-name))
                         data)))))
 
+;;;###autoload
 (defun mb-search-open (mbid)
   "Open MBID in a MusicBrainz website."
   (interactive "sMBID: ")
@@ -506,17 +507,18 @@ The ITEM should be an alist returned by `mb-search--event-exact'."
   "Search for RECORDING and return a vector."
   (mb-search--tidy #'mb-search--recording recording))
 
-(mb-search-define-exact recording
-                        (assoc 'title x)
-                        ;; calculating time as it's in ms
-                        (if (assoc 'length x)
-                            (let* ((total-seconds (/ (cdr (assoc 'length x)) 1000))
-                                   (minutes (/ total-seconds 60))
-                                   (seconds (% total-seconds 60)))
-                              (cons 'length (format "%d:%02d" minutes seconds))))
-                        (assoc 'disambiguation x)
-                        (assoc 'artist-credit x)
-                        (car x))
+(mb-search-define-exact
+ recording
+ (assoc 'title x)
+ ;; calculating time as it's in ms
+ (if (assoc 'length x)
+     (let* ((total-seconds (/ (cdr (assoc 'length x)) 1000))
+            (minutes (/ total-seconds 60))
+            (seconds (% total-seconds 60)))
+       (cons 'length (format "%d:%02d" minutes seconds))))
+ (assoc 'disambiguation x)
+ (assoc 'artist-credit x)
+ (car x))
 
 (defun mb-search--recording-format (item)
   "Format ITEM into a string.
