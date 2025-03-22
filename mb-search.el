@@ -133,13 +133,10 @@ ITEM should be a element from a list returned by `mb-search--tidy'."
 (defun mb-search-get-artists (artists)
   "Return a artist string.
 ARTISTS is entity's artist-credit item."
-  (let ((string))
-    (seq-map (lambda (item)
-               (setq string (concat string
-                                    (concat (cdr (assoc 'name item))
-                                            (cdr (assoc 'joinphrase item))))))
-             artists)
-    string))
+  (mapconcat (lambda (item)
+               (concat (cdr (assoc 'name item))
+                       (cdr (assoc 'joinphrase item))))
+             artists))
 
 (defun mb-search-select (data format-func prompt result)
   "Select a name from the list DATA and return the corresponding ID.
