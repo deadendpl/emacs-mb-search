@@ -4,7 +4,7 @@
 
 ;; Author:  Oliwier Czerwiński <oliwier.czerwi@proton.me>
 ;; Keywords: convenience, music
-;; Version: 20250317
+;; Version: 20250322
 ;; URL: https://github.com/deadendpl/emacs-mb-search
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -48,7 +48,7 @@
 (require 'url-http)
 (require 'json)
 
-(defconst mb-search-version "20250317")
+(defconst mb-search-version "20250322")
 
 (defcustom mb-search-limit 25
   "The maximum number of entries returned.
@@ -67,10 +67,12 @@ Only values between 1 and 100 (both inclusive) are allowed."
   "Search for QUERY of TYPE, and return raw Lisp data.
 It uses built-in url package."
   (with-current-buffer
-      (let ((url-request-extra-headers `(("User-Agent" . ,mb-search-user-agent))))
+      (let ((url-request-extra-headers
+             `(("User-Agent" . ,mb-search-user-agent))))
         (url-retrieve-synchronously
-         (format "https://musicbrainz.org/ws/2/%s?query=%s&fmt=json&limit=%s"
-                 type query mb-search-limit)))
+         (format
+          "https://musicbrainz.org/ws/2/%s?query=%s&fmt=json&limit=%s"
+          type query mb-search-limit)))
     (goto-char url-http-end-of-headers)
     (let ((output (json-read)))
       (if (assoc 'error output)
@@ -275,7 +277,6 @@ The ITEM should be an alist returned by `mb-search--release-group-exact'."
 The ITEM should be an alist returned by `mb-search--work-exact'."
   (concat
    (propertize (cdr (assoc 'title item)) 'face 'underline)
-   ;; if there is disambiguation, add it
    (let ((disambiguation (cdr (assoc 'disambiguation item)))
          (alias (cdr (assoc 'alias item))))
      (cond
@@ -621,8 +622,8 @@ The ITEM should be an alist returned by `mb-search--label-exact'."
    (propertize (cdr (assoc 'name item)) 'face 'underline)
    ;; if there is disambiguation, add it
    (if (assoc 'disambiguation item)
-       (concat " (" (cdr (assoc 'disambiguation item)) ")")
-     )))
+       (concat " (" (cdr (assoc 'disambiguation item))
+               ")"))))
 
 (defun mb-search--label-select (label)
   (mb-search-select (mb-search--label-exact label) #'mb-search--label-format "Label: " 'id))
