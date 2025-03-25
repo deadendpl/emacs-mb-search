@@ -4,7 +4,7 @@
 
 ;; Author:  Oliwier Czerwiński <oliwier.czerwi@proton.me>
 ;; Keywords: convenience, music
-;; Version: 20250322
+;; Version: 20250324
 ;; URL: https://github.com/deadendpl/emacs-mb-search
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -48,7 +48,7 @@
 (require 'url-http)
 (require 'json)
 
-(defconst mb-search-version "20250322")
+(defconst mb-search-version "20250324")
 
 (defcustom mb-search-limit 25
   "The maximum number of entries returned.
@@ -62,6 +62,10 @@ Only values between 1 and 100 (both inclusive) are allowed."
   (concat "emacs-mb-search/" mb-search-version
           " (https://github.com/deadendpl/emacs-mb-search)")
   "A User agent string for mb-search.")
+
+(defcustom mb-search-alias-locale "en"
+  "String representing locale used for alias retrieving."
+  :type 'string)
 
 (defun mb-search-api--url (type query)
   "Search for QUERY of TYPE, and return raw Lisp data.
@@ -126,7 +130,8 @@ ITEM should be a element from a list returned by `mb-search--tidy'."
   (car
    (mapcar (lambda (item) (cdr (assoc 'name item)))
            (seq-filter (lambda (item)
-                         (and (string= (cdr (assoc 'locale item)) "en")
+                         (and (string= (cdr (assoc 'locale item))
+                                       mb-search-alias-locale)
                               (eq (cdr (assoc 'primary item)) t)))
                        (append (cdr (assoc 'aliases item)) nil)))))
 
