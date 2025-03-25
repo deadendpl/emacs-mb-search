@@ -4,7 +4,7 @@
 
 ;; Author:  Oliwier Czerwiński <oliwier.czerwi@proton.me>
 ;; Keywords: convenience, music
-;; Version: 20250324
+;; Version: 20250325
 ;; URL: https://github.com/deadendpl/emacs-mb-search
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -48,7 +48,7 @@
 (require 'url-http)
 (require 'json)
 
-(defconst mb-search-version "20250324")
+(defconst mb-search-version "20250325")
 
 (defcustom mb-search-limit 25
   "The maximum number of entries returned.
@@ -154,7 +154,8 @@ RESULT should be id symbol in most cases."
          (selected-name (completing-read prompt name-list nil t)))
     (cdr (assoc result (cl-find-if
                         (lambda (item)
-                          (string= (funcall format-func item) selected-name))
+                          (string= (funcall format-func item)
+                                   selected-name))
                         data)))))
 
 ;;;###autoload
@@ -200,7 +201,8 @@ The ITEM should be an alist returned by `mb-search--artist-exact'."
        (concat " (" disambiguation ")"))))))
 
 (defun mb-search--artist-select (artist)
-  (mb-search-select (mb-search--artist-exact artist) #'mb-search--artist-format "Artist: " 'id))
+  (mb-search-select (mb-search--artist-exact artist)
+                    #'mb-search--artist-format "Artist: " 'id))
 
 ;;;###autoload
 (defun mb-search-artist (artist)
@@ -226,7 +228,8 @@ The ITEM should be an alist returned by `mb-search--artist-exact'."
 
 (defun mb-search--release-group-format (item)
   "Format ITEM into a string.
-The ITEM should be an alist returned by `mb-search--release-group-exact'."
+The ITEM should be an alist returned by
+`mb-search--release-group-exact'."
   (concat
    (if (assoc 'first-release-date item)
        (concat (cdr (assoc 'first-release-date item)) " - "))
@@ -237,7 +240,9 @@ The ITEM should be an alist returned by `mb-search--release-group-exact'."
     (append (cdr (assoc 'artist-credit item)) nil))))
 
 (defun mb-search--release-group-select (release-group)
-  (mb-search-select (mb-search--release-group-exact release-group) #'mb-search--release-group-format "Releae group: " 'id))
+  (mb-search-select
+   (mb-search--release-group-exact release-group)
+   #'mb-search--release-group-format "Releae group: " 'id))
 
 ;;;###autoload
 (defun mb-search-release-group (release-group)
@@ -291,7 +296,8 @@ The ITEM should be an alist returned by `mb-search--work-exact'."
        (concat " (" disambiguation ")"))))))
 
 (defun mb-search--work-select (work)
-  (mb-search-select (mb-search--work-exact work) #'mb-search--work-format "Work: " 'id))
+  (mb-search-select (mb-search--work-exact work)
+                    #'mb-search--work-format "Work: " 'id))
 
 ;;;###autoload
 (defun mb-search-work (work)
@@ -329,7 +335,8 @@ The ITEM should be an alist returned by `mb-search--release-exact'."
           (append (cdr (assoc 'artist-credit item)) nil))))
 
 (defun mb-search--release-select (release)
-  (mb-search-select (mb-search--release-exact release) #'mb-search--release-format "Release: " 'id))
+  (mb-search-select (mb-search--release-exact release)
+                    #'mb-search--release-format "Release: " 'id))
 
 ;;;###autoload
 (defun mb-search-release (release)
@@ -362,7 +369,8 @@ The ITEM should be an alist returned by `mb-search--series-exact'."
    ")"))
 
 (defun mb-search--series-select (series)
-  (mb-search-select (mb-search--series-exact series) #'mb-search--series-format "Series: " 'id))
+  (mb-search-select (mb-search--series-exact series)
+                    #'mb-search--series-format "Series: " 'id))
 
 ;;;###autoload
 (defun mb-search-series (series)
@@ -391,7 +399,8 @@ The ITEM should be an alist returned by `mb-search--tag-exact'."
 ;;;###autoload
 (defun mb-search-tag (tag)
   (interactive "sTag: ")
-  (browse-url (concat "https://musicbrainz.org/tag/" (mb-search--tag-select tag))))
+  (browse-url (concat "https://musicbrainz.org/tag/"
+                      (mb-search--tag-select tag))))
 
 ;;; Annotation
 
@@ -417,7 +426,8 @@ The ITEM should be an alist returned by `mb-search--annotation-exact'."
    (propertize (cdr (assoc 'name item)) 'face 'italic) ")"))
 
 (defun mb-search--annotation-select (annotation)
-  (mb-search-select (mb-search--annotation-exact annotation) #'mb-search--annotation-format "Artist: " 'entity))
+  (mb-search-select (mb-search--annotation-exact annotation)
+                    #'mb-search--annotation-format "Artist: " 'entity))
 
 ;;;###autoload
 (defun mb-search-annotation (annotation)
@@ -446,7 +456,8 @@ The ITEM should be an alist returned by `mb-search--area-exact'."
    " (" (cdr (assoc 'type item)) ")"))
 
 (defun mb-search--area-select (area)
-  (mb-search-select (mb-search--area-exact area) #'mb-search--area-format "Area: " 'id))
+  (mb-search-select (mb-search--area-exact area)
+                    #'mb-search--area-format "Area: " 'id))
 
 ;;;###autoload
 (defun mb-search-area (area)
@@ -476,12 +487,14 @@ The ITEM should be an alist returned by `mb-search--cdstub-exact'."
        (concat " (" (cdr (assoc 'artist item)) ")"))))
 
 (defun mb-search--cdstub-select (cdstub)
-  (mb-search-select (mb-search--cdstub-exact cdstub) #'mb-search--cdstub-format "Cdstub: " 'id))
+  (mb-search-select (mb-search--cdstub-exact cdstub)
+                    #'mb-search--cdstub-format "Cdstub: " 'id))
 
 ;;;###autoload
 (defun mb-search-cdstub (cdstub)
   (interactive "sCDstub: ")
-  (browse-url (concat "https://musicbrainz.org/cdstub/" (mb-search--cdstub-select cdstub))))
+  (browse-url (concat "https://musicbrainz.org/cdstub/"
+                      (mb-search--cdstub-select cdstub))))
 
 ;;; Event
 
@@ -514,7 +527,8 @@ The ITEM should be an alist returned by `mb-search--event-exact'."
                ")")))))
 
 (defun mb-search--event-select (event)
-  (mb-search-select (mb-search--event-exact event) #'mb-search--event-format "Event: " 'id))
+  (mb-search-select (mb-search--event-exact event)
+                    #'mb-search--event-format "Event: " 'id))
 
 ;;;###autoload
 (defun mb-search-event (event)
@@ -560,7 +574,8 @@ The ITEM should be an alist returned by `mb-search--recording-exact'."
           (append (cdr (assoc 'artist-credit item)) nil))))
 
 (defun mb-search--recording-select (recording)
-  (mb-search-select (mb-search--recording-exact recording) #'mb-search--recording-format "Recording: " 'id))
+  (mb-search-select (mb-search--recording-exact recording)
+                    #'mb-search--recording-format "Recording: " 'id))
 
 ;;;###autoload
 (defun mb-search-recording (recording)
@@ -595,7 +610,8 @@ The ITEM should be an alist returned by `mb-search--instrument-exact'."
    ")"))
 
 (defun mb-search--instrument-select (instrument)
-  (mb-search-select (mb-search--instrument-exact instrument) #'mb-search--instrument-format "Instrument: " 'id))
+  (mb-search-select (mb-search--instrument-exact instrument)
+                    #'mb-search--instrument-format "Instrument: " 'id))
 
 ;;;###autoload
 (defun mb-search-instrument (instrument)
@@ -628,7 +644,8 @@ The ITEM should be an alist returned by `mb-search--label-exact'."
                ")"))))
 
 (defun mb-search--label-select (label)
-  (mb-search-select (mb-search--label-exact label) #'mb-search--label-format "Label: " 'id))
+  (mb-search-select (mb-search--label-exact label)
+                    #'mb-search--label-format "Label: " 'id))
 
 ;;;###autoload
 (defun mb-search-label (label)
@@ -660,7 +677,8 @@ The ITEM should be an alist returned by `mb-search--place-exact'."
        (concat " (" (cdr (assoc 'type item)) ")"))))
 
 (defun mb-search--place-select (place)
-  (mb-search-select (mb-search--place-exact place) #'mb-search--place-format "Place: " 'id))
+  (mb-search-select (mb-search--place-exact place)
+                    #'mb-search--place-format "Place: " 'id))
 
 ;;;###autoload
 (defun mb-search-place (place)
@@ -687,7 +705,8 @@ The ITEM should be an alist returned by `mb-search--url-exact'."
   (propertize (cdr (assoc 'resource item)) 'face 'underline))
 
 (defun mb-search--url-select (url)
-  (mb-search-select (mb-search--url-exact url) #'mb-search--url-format "URL: " 'id))
+  (mb-search-select (mb-search--url-exact url)
+                    #'mb-search--url-format "URL: " 'id))
 
 ;;;###autoload
 (defun mb-search-url (url)
