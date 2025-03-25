@@ -259,19 +259,6 @@ The ITEM should be an alist returned by
   "Search for WORK and return a vector."
   (mb-search--tidy #'mb-search--work work))
 
-;; (defun mb-search--work-get-composer (relation)
-;;   "Input should be the output of
-;; (`car' (`append' (`cdr' (`assoc' 'relations (`car' (`append' (`mb-search--work-tidy' \"foo\") nil)))) nil))."
-;;   (if (string= (cdr (assoc 'type relation)) "composer")
-;;       `(composers . ,(append (list
-;;                               (assoc 'name (assoc 'artist relation))
-;;                               (assoc 'sort-name (assoc 'artist relation))
-;;                               (if (assoc 'disambiguation (assoc 'artist relation))
-;;                                   (assoc 'disambiguation (assoc 'artist relation))
-;;                                 '(disambiguation . "")))))
-;;     "")
-;;   )
-
 (mb-search-define-exact work
                         (assoc 'title x)
                         (assoc 'disambiguation x)
