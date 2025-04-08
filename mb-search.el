@@ -201,6 +201,7 @@ The ITEM should be an alist returned by `mb-search--artist-exact'."
        (concat " (" disambiguation ")"))))))
 
 (defun mb-search--artist-select (artist)
+  "Search for an ARTIST and return its id."
   (mb-search-select (mb-search--artist-exact artist)
                     #'mb-search--artist-format "Artist: " 'id))
 
@@ -241,6 +242,7 @@ The ITEM should be an alist returned by
     (append (cdr (assoc 'artist-credit item)) nil))))
 
 (defun mb-search--release-group-select (release-group)
+  "Search for a RELEASE-GROUP and return its id."
   (mb-search-select
    (mb-search--release-group-exact release-group)
    #'mb-search--release-group-format "Releae group: " 'id))
@@ -285,6 +287,7 @@ The ITEM should be an alist returned by `mb-search--work-exact'."
        (concat " (" disambiguation ")"))))))
 
 (defun mb-search--work-select (work)
+  "Search for a WORK and return its id."
   (mb-search-select (mb-search--work-exact work)
                     #'mb-search--work-format "Work: " 'id))
 
@@ -325,6 +328,7 @@ The ITEM should be an alist returned by `mb-search--release-exact'."
           (append (cdr (assoc 'artist-credit item)) nil))))
 
 (defun mb-search--release-select (release)
+  "Search for a RELEASE and return its id."
   (mb-search-select (mb-search--release-exact release)
                     #'mb-search--release-format "Release: " 'id))
 
@@ -360,6 +364,7 @@ The ITEM should be an alist returned by `mb-search--series-exact'."
    ")"))
 
 (defun mb-search--series-select (series)
+  "Search for a SERIES and return its id."
   (mb-search-select (mb-search--series-exact series)
                     #'mb-search--series-format "Series: " 'id))
 
@@ -386,6 +391,7 @@ The ITEM should be an alist returned by `mb-search--tag-exact'."
   (propertize item 'face 'underline))
 
 (defun mb-search--tag-select (tag)
+  "Search for a TAG and return its id."
   (completing-read "Tag: " (mb-search--tag-exact tag)))
 
 ;;;###autoload
@@ -419,6 +425,7 @@ The ITEM should be an alist returned by `mb-search--annotation-exact'."
    (propertize (cdr (assoc 'name item)) 'face 'italic) ")"))
 
 (defun mb-search--annotation-select (annotation)
+  "Search for an ANNOTATION and return its id."
   (mb-search-select (mb-search--annotation-exact annotation)
                     #'mb-search--annotation-format "Artist: " 'entity))
 
@@ -450,6 +457,7 @@ The ITEM should be an alist returned by `mb-search--area-exact'."
    " (" (cdr (assoc 'type item)) ")"))
 
 (defun mb-search--area-select (area)
+  "Search for an AREA and return its id."
   (mb-search-select (mb-search--area-exact area)
                     #'mb-search--area-format "Area: " 'id))
 
@@ -482,6 +490,7 @@ The ITEM should be an alist returned by `mb-search--cdstub-exact'."
        (concat " (" (cdr (assoc 'artist item)) ")"))))
 
 (defun mb-search--cdstub-select (cdstub)
+  "Search for a CDSTUB and return its id."
   (mb-search-select (mb-search--cdstub-exact cdstub)
                     #'mb-search--cdstub-format "Cdstub: " 'id))
 
@@ -523,6 +532,7 @@ The ITEM should be an alist returned by `mb-search--event-exact'."
                ")")))))
 
 (defun mb-search--event-select (event)
+  "Search for an EVENT and return its id."
   (mb-search-select (mb-search--event-exact event)
                     #'mb-search--event-format "Event: " 'id))
 
@@ -571,6 +581,7 @@ The ITEM should be an alist returned by `mb-search--recording-exact'."
           (append (cdr (assoc 'artist-credit item)) nil))))
 
 (defun mb-search--recording-select (recording)
+  "Search for a RECORDING and return its id."
   (mb-search-select (mb-search--recording-exact recording)
                     #'mb-search--recording-format "Recording: " 'id))
 
@@ -608,6 +619,7 @@ The ITEM should be an alist returned by `mb-search--instrument-exact'."
    ")"))
 
 (defun mb-search--instrument-select (instrument)
+  "Search for an INSTRUMENT and return its id."
   (mb-search-select (mb-search--instrument-exact instrument)
                     #'mb-search--instrument-format "Instrument: " 'id))
 
@@ -643,6 +655,7 @@ The ITEM should be an alist returned by `mb-search--label-exact'."
                ")"))))
 
 (defun mb-search--label-select (label)
+  "Search for a LABEL and return its id."
   (mb-search-select (mb-search--label-exact label)
                     #'mb-search--label-format "Label: " 'id))
 
@@ -677,6 +690,7 @@ The ITEM should be an alist returned by `mb-search--place-exact'."
        (concat " (" (cdr (assoc 'type item)) ")"))))
 
 (defun mb-search--place-select (place)
+  "Search for a PLACE and return its id."
   (mb-search-select (mb-search--place-exact place)
                     #'mb-search--place-format "Place: " 'id))
 
@@ -706,6 +720,7 @@ The ITEM should be an alist returned by `mb-search--url-exact'."
   (propertize (cdr (assoc 'resource item)) 'face 'underline))
 
 (defun mb-search--url-select (url)
+  "Search for an URL and return its id."
   (mb-search-select (mb-search--url-exact url)
                     #'mb-search--url-format "URL: " 'id))
 
