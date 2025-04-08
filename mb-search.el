@@ -127,13 +127,12 @@ function's output."
 (defun mb-search-get-primary-alias (item)
   "Get a primary alias from ITEM.
 ITEM should be a element from a list returned by `mb-search--tidy'."
-  (let ((alias
-         (car (seq-filter
-               (lambda (item)
-                 (and (string= (cdr (assoc 'locale item))
-                               mb-search-alias-locale)
-                      (eq (cdr (assoc 'primary item)) t)))
-               (append (cdr (assoc 'aliases item)) nil)))))
+  (let ((alias (seq-find
+                (lambda (item)
+                  (and (string= (cdr (assoc 'locale item))
+                                mb-search-alias-locale)
+                       (eq (cdr (assoc 'primary item)) t)))
+                (append (cdr (assoc 'aliases item)) nil))))
     (cdr (assoc 'name alias))))
 
 (defun mb-search-get-artists (artists)
