@@ -4,7 +4,7 @@
 
 ;; Author:  Oliwier Czerwiński <oliwier.czerwi@proton.me>
 ;; Keywords: convenience, music
-;; Version: 20250327
+;; Version: 20250408
 ;; URL: https://github.com/deadendpl/emacs-mb-search
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -48,7 +48,7 @@
 (require 'url-http)
 (require 'json)
 
-(defconst mb-search-version "20250327")
+(defconst mb-search-version "20250408")
 
 (defcustom mb-search-limit 25
   "The maximum number of entries returned.
@@ -207,7 +207,7 @@ The ITEM should be an alist returned by `mb-search--artist-exact'."
 
 ;;;###autoload
 (defun mb-search-artist (artist)
-  "Search for an artist in MusicBrainz."
+  "Search for an ARTIST in MusicBrainz."
   (interactive "sArtist: ")
   (mb-search-open (mb-search--artist-select artist)))
 
@@ -248,7 +248,7 @@ The ITEM should be an alist returned by
 
 ;;;###autoload
 (defun mb-search-release-group (release-group)
-  "Search for a release group in MusicBrainz."
+  "Search for a RELEASE-GROUP in MusicBrainz."
   (interactive "sRelease group: ")
   (mb-search-open (mb-search--release-group-select release-group)))
 
@@ -291,7 +291,7 @@ The ITEM should be an alist returned by `mb-search--work-exact'."
 
 ;;;###autoload
 (defun mb-search-work (work)
-  "Search for a work in MusicBrainz."
+  "Search for a WORK in MusicBrainz."
   (interactive "sWork: ")
   (mb-search-open (mb-search--work-select work)))
 
@@ -331,7 +331,7 @@ The ITEM should be an alist returned by `mb-search--release-exact'."
 
 ;;;###autoload
 (defun mb-search-release (release)
-  "Search for a release in MusicBrainz."
+  "Search for a RELEASE in MusicBrainz."
   (interactive "sRelease: ")
   (mb-search-open (mb-search--release-select release)))
 
@@ -366,7 +366,7 @@ The ITEM should be an alist returned by `mb-search--series-exact'."
 
 ;;;###autoload
 (defun mb-search-series (series)
-  "Search for a series in MusicBrainz."
+  "Search for a SERIES in MusicBrainz."
   (interactive "sSeries: ")
   (mb-search-open (mb-search--series-select series)))
 
@@ -391,7 +391,7 @@ The ITEM should be an alist returned by `mb-search--tag-exact'."
 
 ;;;###autoload
 (defun mb-search-tag (tag)
-  "Search for a tag in MusicBrainz."
+  "Search for a TAG in MusicBrainz."
   (interactive "sTag: ")
   (browse-url (concat "https://musicbrainz.org/tag/"
                       (mb-search--tag-select tag))))
@@ -425,7 +425,7 @@ The ITEM should be an alist returned by `mb-search--annotation-exact'."
 
 ;;;###autoload
 (defun mb-search-annotation (annotation)
-  "Search for an annotation in MusicBrainz."
+  "Search for an ANNOTATION in MusicBrainz."
   (interactive "sAnnotation: ")
   (mb-search-open (mb-search--annotation-select annotation)))
 
@@ -456,7 +456,7 @@ The ITEM should be an alist returned by `mb-search--area-exact'."
 
 ;;;###autoload
 (defun mb-search-area (area)
-  "Search for an area in MusicBrainz."
+  "Search for an AREA in MusicBrainz."
   (interactive "sArea: ")
   (mb-search-open (mb-search--area-select area)))
 
@@ -488,7 +488,7 @@ The ITEM should be an alist returned by `mb-search--cdstub-exact'."
 
 ;;;###autoload
 (defun mb-search-cdstub (cdstub)
-  "Search for a CD stub in MusicBrainz."
+  "Search for a CDSTUB in MusicBrainz."
   (interactive "sCDstub: ")
   (browse-url (concat "https://musicbrainz.org/cdstub/"
                       (mb-search--cdstub-select cdstub))))
@@ -529,7 +529,7 @@ The ITEM should be an alist returned by `mb-search--event-exact'."
 
 ;;;###autoload
 (defun mb-search-event (event)
-  "Search for an event in MusicBrainz."
+  "Search for an EVENT in MusicBrainz."
   (interactive "sEvent: ")
   (mb-search-open (mb-search--event-select event)))
 
@@ -577,7 +577,7 @@ The ITEM should be an alist returned by `mb-search--recording-exact'."
 
 ;;;###autoload
 (defun mb-search-recording (recording)
-  "Search for a recording in MusicBrainz."
+  "Search for a RECORDING in MusicBrainz."
   (interactive "sRecording: ")
   (mb-search-open (mb-search--recording-select recording)))
 
@@ -614,7 +614,7 @@ The ITEM should be an alist returned by `mb-search--instrument-exact'."
 
 ;;;###autoload
 (defun mb-search-instrument (instrument)
-  "Search for an instrument in MusicBrainz."
+  "Search for an INSTRUMENT in MusicBrainz."
   (interactive "sInstrument: ")
   (mb-search-open (mb-search--instrument-select instrument)))
 
@@ -649,7 +649,7 @@ The ITEM should be an alist returned by `mb-search--label-exact'."
 
 ;;;###autoload
 (defun mb-search-label (label)
-  "Search for a label in MusicBrainz."
+  "Search for a LABEL in MusicBrainz."
   (interactive "sLabel: ")
   (mb-search-open (mb-search--label-select label)))
 
@@ -683,7 +683,7 @@ The ITEM should be an alist returned by `mb-search--place-exact'."
 
 ;;;###autoload
 (defun mb-search-place (place)
-  "Search for a place in MusicBrainz."
+  "Search for a PLACE in MusicBrainz."
   (interactive "sPlace: ")
   (mb-search-open (mb-search--place-select place)))
 
