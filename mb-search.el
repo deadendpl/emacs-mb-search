@@ -114,6 +114,14 @@ Applies QUERY to FUNC which should be mb-search--[type]."
         (error "No results were found")
       data)))
 
+(defmacro mb-search-define-basic (type)
+  "Define a basic search function.
+TYPE is unquoted symbol."
+  `(defun ,(intern (format "mb-search--%s" type)) (,type)
+     ,(format "Search for %s and return raw Lisp data."
+              (upcase (format "%s" type)))
+     (mb-search-api ,(format "%s" type) ,type)))
+
 (defmacro mb-search-define-exact (type &rest args)
   "Define a exact retrieving function.
 TYPE is a unquoted symbol of entity type.
@@ -166,9 +174,7 @@ RESULT should be id symbol in most cases."
 
 ;;; Artist
 
-(defun mb-search--artist (artist)
-  "Search for ARTIST, and return raw Lisp data."
-  (mb-search-api "artist" artist))
+(mb-search-define-basic artist)
 
 (defun mb-search--artist-tidy (artist)
   "Search for ARTIST and return a vector."
@@ -255,9 +261,7 @@ The ITEM should be an alist returned by
 
 ;;; Work
 
-(defun mb-search--work (work)
-  "Search for WORK, and return raw Lisp data."
-  (mb-search-api "work" work))
+(mb-search-define-basic work)
 
 (defun mb-search--work-tidy (work)
   "Search for WORK and return a vector."
@@ -299,8 +303,7 @@ The ITEM should be an alist returned by `mb-search--work-exact'."
 
 ;;; Release
 
-(defun mb-search--release (release)
-  (mb-search-api "release" release))
+(mb-search-define-basic release)
 
 (defun mb-search--release-tidy (release)
   "Search for RELEASE and return a vector."
@@ -340,8 +343,7 @@ The ITEM should be an alist returned by `mb-search--release-exact'."
 
 ;;; Series
 
-(defun mb-search--series (series)
-  (mb-search-api "series" series))
+(mb-search-define-basic series)
 
 (defun mb-search--series-tidy (series)
   "Search for SERIES and return a vector."
@@ -376,8 +378,7 @@ The ITEM should be an alist returned by `mb-search--series-exact'."
 
 ;;; Tag
 
-(defun mb-search--tag (tag)
-  (mb-search-api "tag" tag))
+(mb-search-define-basic tag)
 
 (defun mb-search--tag-tidy (tag)
   "Search for TAG and return a vector."
@@ -403,8 +404,7 @@ The ITEM should be an alist returned by `mb-search--tag-exact'."
 
 ;;; Annotation
 
-(defun mb-search--annotation (annotation)
-  (mb-search-api "annotation" annotation))
+(mb-search-define-basic annotation)
 
 (defun mb-search--annotation-tidy (annotation)
   "Search for ANNOTATION and return a vector."
@@ -437,8 +437,7 @@ The ITEM should be an alist returned by `mb-search--annotation-exact'."
 
 ;;; Area
 
-(defun mb-search--area (area)
-  (mb-search-api "area" area))
+(mb-search-define-basic area)
 
 (defun mb-search--area-tidy (area)
   "Search for AREA and return a vector."
@@ -469,8 +468,7 @@ The ITEM should be an alist returned by `mb-search--area-exact'."
 
 ;;; CDstub
 
-(defun mb-search--cdstub (cdstub)
-  (mb-search-api "cdstub" cdstub))
+(mb-search-define-basic cdstub)
 
 (defun mb-search--cdstub-tidy (cdstub)
   "Search for CDSTUB and return a vector."
@@ -503,8 +501,7 @@ The ITEM should be an alist returned by `mb-search--cdstub-exact'."
 
 ;;; Event
 
-(defun mb-search--event (event)
-  (mb-search-api "event" event))
+(mb-search-define-basic event)
 
 (defun mb-search--event-tidy (event)
   "Search for EVENT and return a vector."
@@ -544,8 +541,7 @@ The ITEM should be an alist returned by `mb-search--event-exact'."
 
 ;;; Recording
 
-(defun mb-search--recording (recording)
-  (mb-search-api "recording" recording))
+(mb-search-define-basic recording)
 
 (defun mb-search--recording-tidy (recording)
   "Search for RECORDING and return a vector."
@@ -593,9 +589,7 @@ The ITEM should be an alist returned by `mb-search--recording-exact'."
 
 ;;; Instrument
 
-(defun mb-search--instrument (instrument)
-  "Search for INSTRUMENT, and return raw Lisp data."
-  (mb-search-api "instrument" instrument))
+(mb-search-define-basic instrument)
 
 (defun mb-search--instrument-tidy (instrument)
   "Search for INSTRUMENT and return a vector."
@@ -631,9 +625,7 @@ The ITEM should be an alist returned by `mb-search--instrument-exact'."
 
 ;;; Label
 
-(defun mb-search--label (label)
-  "Search for LABEL, and return raw Lisp data."
-  (mb-search-api "label" label))
+(mb-search-define-basic label)
 
 (defun mb-search--label-tidy (label)
   "Search for LABEL and return a vector."
@@ -667,9 +659,7 @@ The ITEM should be an alist returned by `mb-search--label-exact'."
 
 ;;; Place
 
-(defun mb-search--place (place)
-  "Search for PLACE, and return raw Lisp data."
-  (mb-search-api "place" place))
+(mb-search-define-basic place)
 
 (defun mb-search--place-tidy (place)
   "Search for PLACE and return a vector."
@@ -702,9 +692,7 @@ The ITEM should be an alist returned by `mb-search--place-exact'."
 
 ;;; URL
 
-(defun mb-search--url (url)
-  "Search for URL, and return raw Lisp data."
-  (mb-search-api "url" url))
+(mb-search-define-basic url)
 
 (defun mb-search--url-tidy (url)
   "Search for URL and return a vector."
